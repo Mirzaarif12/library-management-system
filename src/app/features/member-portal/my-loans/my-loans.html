@@ -1,0 +1,248 @@
+<section class="my-loans-page" aria-labelledby="my-loans-title">
+  <header class="page-header">
+    <p class="eyebrow">MEMBER ACCOUNT</p>
+    <h2 id="my-loans-title">My loans</h2>
+    <p class="subtitle">Review your borrowed books, due dates, and charges.</p>
+  </header>
+
+  @if (overdueReplacementCharges().length > 0 || overdueLoans().length > 0 || dueSoonLoans().length > 0) {
+    <div class="alerts">
+      @if (overdueReplacementCharges().length > 0) {
+        <div class="loan-alert charge-alert" role="alert">
+          <span class="alert-icon" aria-hidden="true">!</span>
+          <div>
+            <strong>You have {{ overdueReplacementCharges().length }} unpaid charge(s) past the payment deadline.</strong>
+            <small>Please contact library staff to resolve them.</small>
+          </div>
+          <a href="#member-charges-title" aria-label="View member charges">›</a>
+        </div>
+      }
+      @if (overdueLoans().length > 0) {
+        <div class="loan-alert overdue-alert" role="alert">
+          <span class="alert-icon" aria-hidden="true">!</span>
+          <div>
+            <strong>You have {{ overdueLoans().length }} overdue book(s).</strong>
+            <small>Please return them as soon as possible.</small>
+          </div>
+          <a href="#loan-history-title" aria-label="View loan history">›</a>
+        </div>
+      } @else if (dueSoonLoans().length > 0) {
+        <div class="loan-alert due-soon-alert" role="status">
+          <span class="alert-icon" aria-hidden="true">◷</span>
+          <div>
+            <strong>{{ dueSoonLoans().length }} book(s) due within three days.</strong>
+            <small>Check your due dates and return them on time.</small>
+          </div>
+          <a href="#loan-history-title" aria-label="View loan history">›</a>
+        </div>
+      }
+    </div>
+  }
+
+  <section class="data-panel" aria-labelledby="loan-history-title">
+    <header class="panel-header">
+      <div class="panel-heading">
+        <span class="panel-icon book-icon" aria-hidden="true">▤</span>
+        <div>
+          <h3 id="loan-history-title">Loan history</h3>
+          <p>Your current and past loans</p>
+        </div>
+      </div>
+      <div class="panel-controls">
+        <div class="filter-tabs" role="group" aria-label="Filter loan history">
+          <button type="button" [attr.aria-pressed]="loanFilter() === 'all'" (click)="setLoanFilter('all')">All ({{ myLoans().length }})</button>
+          <button type="button" [attr.aria-pressed]="loanFilter() === 'borrowed'" (click)="setLoanFilter('borrowed')">Currently borrowed ({{ borrowedCount() }})</button>
+          <button type="button" [attr.aria-pressed]="loanFilter() === 'overdue'" (click)="setLoanFilter('overdue')">Overdue ({{ overdueLoans().length }})</button>
+          <button type="button" [attr.aria-pressed]="loanFilter() === 'returned'" (click)="setLoanFilter('returned')">Returned ({{ returnedCount() }})</button>
+          @if (lostCount() > 0) {
+            <button type="button" [attr.aria-pressed]="loanFilter() === 'lost'" (click)="setLoanFilter('lost')">Lost ({{ lostCount() }})</button>
+          }
+        </div>
+        <div class="search-and-sort">
+          <label class="search-control">
+            <span class="visually-hidden">Search loans by book, author, or loan ID</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></svg>
+            <input type="search" placeholder="Search by book title..." [value]="loanSearch()" (input)="setLoanSearch($event)" />
+          </label>
+          <label class="sort-control">
+            <span class="visually-hidden">Sort loans</span>
+            <select [value]="loanSort()" (change)="setLoanSort($event)">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="due">Due date</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    </header>
+
+    <div class="table-wrap">
+      <table class="data-table loan-table">
+        <caption class="visually-hidden">Your current and past loans</caption>
+        <thead>
+          <tr>
+            <th scope="col">No.</th>
+            <th scope="col">Book</th>
+            <th scope="col">Borrowed</th>
+            <th scope="col">Due date</th>
+            <th scope="col">Returned</th>
+            <th scope="col">Status</th>
+            <th scope="col">Fine</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (loan of visibleLoans(); track loan.id; let index = $index) {
+            <tr>
+              <td class="row-number">{{ (currentLoanPage() - 1) * pageSize + index + 1 }}</td>
+              <td>
+                <div class="book-summary">
+                  <span class="book-cover">
+                    @if (bookCover(loan.bookId); as coverUrl) {
+                      <img [ngSrc]="coverUrl" width="34" height="48" alt="" />
+                    } @else {
+                      <span aria-hidden="true">▤</span>
+                    }
+                  </span>
+                  <span><strong>{{ bookTitle(loan.bookId) }}</strong><small>{{ bookAuthor(loan.bookId) }}</small></span>
+                </div>
+              </td>
+              <td>{{ loan.borrowedAt }}</td>
+              <td [class.date-overdue]="loanStatus(loan) === 'overdue'">{{ loan.dueAt }}</td>
+              <td>{{ loan.returnedAt ?? loan.lostAt ?? '—' }}</td>
+              <td>
+                <span class="loan-status" [class.overdue]="loanStatus(loan) === 'overdue'" [class.returned]="loanStatus(loan) === 'returned'" [class.damaged]="loanStatus(loan) === 'damaged'" [class.lost]="loanStatus(loan) === 'lost'">
+                  {{ loanStatusLabel(loan) }}
+                </span>
+              </td>
+              <td>RM {{ fineAmount(loan).toFixed(2) }}</td>
+              <td>
+                <button class="row-action" type="button" [attr.aria-expanded]="expandedLoanId() === loan.id" [attr.aria-controls]="expandedLoanId() === loan.id ? 'loan-details-' + loan.id : null" (click)="toggleLoanDetails(loan.id)">
+                  {{ expandedLoanId() === loan.id ? 'Hide details' : 'View details' }}
+                </button>
+              </td>
+            </tr>
+            @if (expandedLoanId() === loan.id) {
+              <tr class="details-row" [id]="'loan-details-' + loan.id">
+                <td colspan="8">
+                  <div class="detail-content">
+                    <strong>Loan {{ loan.id }}</strong>
+                    <span>Book: {{ bookTitle(loan.bookId) }}</span>
+                    <span>Borrowed: {{ loan.borrowedAt }}</span>
+                    <span>Due: {{ loan.dueAt }}</span>
+                    @if (loan.returnedAt) { <span>Returned: {{ loan.returnedAt }}</span> }
+                    @if (loan.lostAt) { <span>Reported lost: {{ loan.lostAt }}</span> }
+                    @if (loan.returnCondition === 'damaged') {
+                      <span>Return condition: Damaged ({{ loan.damageSeverity ?? 'unspecified' }})</span>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          } @empty {
+            <tr><td class="empty-cell" colspan="8">No loans match this view.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <footer class="panel-footer">
+      <p>Showing {{ loanRangeStart() }} to {{ loanRangeEnd() }} of {{ filteredLoans().length }} loans</p>
+      <nav class="pagination" aria-label="Loan history pages">
+        <button type="button" aria-label="Previous loan page" [disabled]="currentLoanPage() === 1" (click)="changeLoanPage(-1)">‹</button>
+        <span>Page {{ currentLoanPage() }} of {{ loanPageCount() }}</span>
+        <button type="button" aria-label="Next loan page" [disabled]="currentLoanPage() === loanPageCount()" (click)="changeLoanPage(1)">›</button>
+      </nav>
+    </footer>
+  </section>
+
+  <section class="data-panel" aria-labelledby="member-charges-title">
+    <header class="panel-header">
+      <div class="panel-heading">
+        <span class="panel-icon charge-icon" aria-hidden="true">◎</span>
+        <div>
+          <h3 id="member-charges-title">Member charges</h3>
+          <p class="charge-summary">Outstanding charges: <strong>RM {{ unpaidChargeTotal().toFixed(2) }}</strong></p>
+          <p>Review fines and replacement charges recorded by library staff.</p>
+        </div>
+      </div>
+      <div class="filter-tabs charge-tabs" role="group" aria-label="Filter member charges">
+        <button type="button" [attr.aria-pressed]="chargeFilter() === 'all'" (click)="setChargeFilter('all')">All ({{ myCharges().length }})</button>
+        <button type="button" [attr.aria-pressed]="chargeFilter() === 'unpaid'" (click)="setChargeFilter('unpaid')">Unpaid ({{ unpaidCount() }})</button>
+        <button type="button" [attr.aria-pressed]="chargeFilter() === 'paid'" (click)="setChargeFilter('paid')">Paid ({{ paidCount() }})</button>
+        <button type="button" [attr.aria-pressed]="chargeFilter() === 'overdue'" (click)="setChargeFilter('overdue')">Overdue ({{ overdueReplacementCharges().length }})</button>
+        @if (waivedCount() > 0) {
+          <button type="button" [attr.aria-pressed]="chargeFilter() === 'waived'" (click)="setChargeFilter('waived')">Waived ({{ waivedCount() }})</button>
+        }
+      </div>
+    </header>
+
+    <div class="table-wrap">
+      <table class="data-table charge-table">
+        <caption class="visually-hidden">Your member charges</caption>
+        <thead>
+          <tr>
+            <th scope="col">No.</th>
+            <th scope="col">Book</th>
+            <th scope="col">Reason</th>
+            <th scope="col">Issued</th>
+            <th scope="col">Payment deadline</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Status</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (charge of visibleCharges(); track charge.id; let index = $index) {
+            <tr>
+              <td class="row-number">{{ (currentChargePage() - 1) * pageSize + index + 1 }}</td>
+              <td class="charge-book">{{ bookTitle(charge.bookId) }}</td>
+              <td>{{ chargeReason(charge) }}</td>
+              <td>{{ charge.issuedAt }}</td>
+              <td [class.date-overdue]="charge.status === 'unpaid' && charge.paymentDueAt < today">{{ charge.paymentDueAt }}</td>
+              <td class="amount-cell">RM {{ charge.amount.toFixed(2) }}</td>
+              <td>
+                <span class="charge-status" [class.unpaid]="charge.status === 'unpaid' && charge.paymentDueAt >= today" [class.payment-overdue]="charge.status === 'unpaid' && charge.paymentDueAt < today" [class.paid]="charge.status === 'paid'" [class.waived]="charge.status === 'waived'">
+                  {{ chargeStatus(charge) }}
+                </span>
+              </td>
+              <td>
+                <button class="row-action" type="button" [attr.aria-expanded]="expandedChargeId() === charge.id" [attr.aria-controls]="expandedChargeId() === charge.id ? 'charge-details-' + charge.id : null" (click)="toggleChargeDetails(charge.id)">
+                  {{ expandedChargeId() === charge.id ? 'Hide details' : 'View details' }}
+                </button>
+              </td>
+            </tr>
+            @if (expandedChargeId() === charge.id) {
+              <tr class="details-row" [id]="'charge-details-' + charge.id">
+                <td colspan="8">
+                  <div class="detail-content">
+                    <strong>Charge {{ charge.id }}</strong>
+                    <span>Reason: {{ chargeReason(charge) }}</span>
+                    <span>Amount: RM {{ charge.amount.toFixed(2) }}</span>
+                    <span>Payment deadline: {{ charge.paymentDueAt }}</span>
+                    @if (charge.status === 'paid' && charge.paidAt) {
+                      <span>Payment recorded: {{ charge.paidAt }}</span>
+                    } @else if (charge.status === 'waived') {
+                      <span>This charge was waived by library staff.</span>
+                    } @else {
+                      <span>Please pay at the library desk. Staff will record your payment.</span>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          } @empty {
+            <tr><td class="empty-cell" colspan="8">No charges match this view.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <footer class="panel-footer">
+      <p>Showing {{ chargeRangeStart() }} to {{ chargeRangeEnd() }} of {{ filteredCharges().length }} charges</p>
+      <nav class="pagination" aria-label="Member charge pages">
+        <button type="button" aria-label="Previous charge page" [disabled]="currentChargePage() === 1" (click)="changeChargePage(-1)">‹</button>
+        <span>Page {{ currentChargePage() }} of {{ chargePageCount() }}</span>
+        <button type="button" aria-label="Next charge page" [disabled]="currentChargePage() === chargePageCount()" (click)="changeChargePage(1)">›</button>
+      </nav>
+    </footer>
+  </section>
+</section>

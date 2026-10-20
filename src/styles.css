@@ -1,1 +1,27 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --color-forest: #18352b;
+  --color-forest-light: #315e4d;
+  --color-gold: #b88a42;
+
+  --color-page: #f5f1e8;
+  --color-surface: #fffdf8;
+  --color-surface-soft: #eee8dc;
+
+  --color-text: #1d2823;
+  --color-muted: #68736d;
+  --color-border: #e2dbcf;
+  --color-danger: #b42318;
+}
+
+body {
+  margin: 0;
+  background: var(--color-page);
+  color: var(--color-text);
+  font-family: Arial, sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: Georgia, 'Times New Roman', serif;
+}

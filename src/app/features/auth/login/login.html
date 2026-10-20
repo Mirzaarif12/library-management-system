@@ -1,0 +1,52 @@
+<main class="auth-page">
+  <section class="auth-card" aria-labelledby="login-title">
+    <p class="auth-eyebrow">LIBRARY MANAGEMENT SYSTEM</p>
+    <h1 id="login-title">Sign in</h1>
+    <p class="auth-description">Sign in to access your library account.</p>
+
+    <form
+      class="auth-form"
+      [formGroup]="loginForm"
+      (ngSubmit)="submit()"
+    >
+      <label class="auth-field" for="login-email">Email</label>
+      <input
+        class="auth-input"
+        id="login-email"
+        type="email"
+        formControlName="email"
+        autocomplete="username"
+        required
+      />
+
+      @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
+        <p class="field-error" role="alert">Please enter a valid email address.</p>
+      }
+
+      <label class="auth-field" for="login-password">Password</label>
+      <input
+        class="auth-input"
+        id="login-password"
+        type="password"
+        formControlName="password"
+        autocomplete="current-password"
+        required
+      />
+
+      @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) {
+        <p class="field-error" role="alert">Please enter your password.</p>
+      }
+
+      @if (errorMessage()) {
+        <p class="auth-error" role="alert">{{ errorMessage() }}</p>
+      }
+
+      <button class="auth-submit" type="submit">Sign in</button>
+    </form>
+
+    <p class="auth-footer">
+      Don’t have an account?
+      <a routerLink="/signup">Create one</a>
+    </p>
+  </section>
+</main>

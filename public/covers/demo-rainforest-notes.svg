@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="640" viewBox="0 0 440 640" role="img" aria-label="Rainforest Field Notes demo book cover">
+  <rect width="440" height="640" fill="#17382d"/>
+  <path d="M65 0c90 130 70 270 10 390M375 0c-90 130-70 270-10 390" fill="none" stroke="#47775a" stroke-width="35" opacity=".8"/>
+  <path d="M220 90c-82 76-82 185 0 255 82-70 82-179 0-255Z" fill="#9ebc72"/>
+  <path d="M220 105v222m0-110-65-59m65 110 65-64" fill="none" stroke="#426c4b" stroke-width="7"/>
+  <text x="220" y="73" text-anchor="middle" fill="#e8d8a7" font-family="Georgia,serif" font-size="22" letter-spacing="4">LIBRARY DEMO</text>
+  <text x="220" y="414" text-anchor="middle" fill="#fff8df" font-family="Georgia,serif" font-size="47">Rainforest</text>
+  <text x="220" y="470" text-anchor="middle" fill="#fff8df" font-family="Georgia,serif" font-size="47">Field Notes</text>
+  <text x="220" y="560" text-anchor="middle" fill="#e8d8a7" font-family="Georgia,serif" font-size="27">N. LIM</text>
+</svg>

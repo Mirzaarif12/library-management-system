@@ -1,0 +1,99 @@
+<section class="staff-page" aria-labelledby="staff-title">
+  <header class="page-header">
+    <p class="eyebrow">ACCOUNT MANAGEMENT</p>
+    <h1 id="staff-title">Staff accounts</h1>
+    <p>Active staff and admins can create a staff login. Admins can manage staff access.</p>
+  </header>
+
+  <div class="stats-grid" role="group" aria-label="Staff account statistics">
+    <article class="stat-card">
+      <span class="stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="9" cy="8" r="3" /><path d="M2 20v-1c0-3 3-5 7-5s7 2 7 5v1M17 6a3 3 0 0 1 0 6M17 14c3 0 5 2 5 5v1" /></svg></span>
+      <div><p>Total staff accounts</p><strong>{{ totalStaff() }}</strong></div>
+    </article>
+    <article class="stat-card">
+      <span class="stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="12" cy="12" r="9" /><path d="m8 12 3 3 5-6" /></svg></span>
+      <div><p>Active accounts</p><strong>{{ activeStaff() }}</strong></div>
+    </article>
+    <article class="stat-card stat-disabled">
+      <span class="stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="12" cy="12" r="9" /><path d="m6 6 12 12" /></svg></span>
+      <div><p>Disabled accounts</p><strong>{{ disabledStaff() }}</strong></div>
+    </article>
+  </div>
+
+  @if (message()) { <p class="notice success" role="status">{{ message() }}</p> }
+  @if (error()) { <p class="notice error" role="alert">{{ error() }}</p> }
+
+  <section class="panel create-panel" aria-labelledby="create-staff-title">
+    <div class="panel-heading">
+      <span class="panel-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="9" cy="8" r="4" /><path d="M2 21v-2c0-3 3-5 7-5s7 2 7 5v2M19 7v8M15 11h8" /></svg></span>
+      <div><h2 id="create-staff-title">Create a staff account</h2><p>Add a new staff member to the system.</p></div>
+    </div>
+    <form class="create-form" [formGroup]="createForm" (ngSubmit)="createStaff()">
+      <div class="field">
+        <label for="staff-name">Staff name <span class="required-mark" aria-hidden="true">*</span></label>
+        <div class="input-shell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4" /><path d="M4 21v-2c0-3 3-5 8-5s8 2 8 5v2" /></svg><input id="staff-name" formControlName="name" autocomplete="name" placeholder="Enter staff name" required [attr.aria-invalid]="createForm.controls.name.touched && createForm.controls.name.invalid ? true : null" [attr.aria-describedby]="createForm.controls.name.touched && createForm.controls.name.invalid ? 'staff-name-error' : null" /></div>
+        @if (createForm.controls.name.touched && createForm.controls.name.invalid) { <small class="field-error" id="staff-name-error">Enter the staff member's name.</small> }
+      </div>
+      <div class="field">
+        <label for="staff-email">Email <span class="required-mark" aria-hidden="true">*</span></label>
+        <div class="input-shell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 7 9-7" /></svg><input id="staff-email" type="email" formControlName="email" autocomplete="off" placeholder="Enter email address" required [attr.aria-invalid]="createForm.controls.email.touched && createForm.controls.email.invalid ? true : null" [attr.aria-describedby]="createForm.controls.email.touched && createForm.controls.email.invalid ? 'staff-email-error' : null" /></div>
+        @if (createForm.controls.email.touched && createForm.controls.email.invalid) { <small class="field-error" id="staff-email-error">Enter a valid email address.</small> }
+      </div>
+      <div class="field">
+        <label for="staff-password">Initial password <span class="required-mark" aria-hidden="true">*</span></label>
+        <div class="input-shell password-shell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="10" width="14" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg><input id="staff-password" [type]="showInitialPassword() ? 'text' : 'password'" formControlName="password" autocomplete="new-password" placeholder="Enter initial password" minlength="8" required [attr.aria-invalid]="createForm.controls.password.touched && createForm.controls.password.invalid ? true : null" [attr.aria-describedby]="createForm.controls.password.touched && createForm.controls.password.invalid ? 'staff-password-error' : null" /><button type="button" class="password-toggle" [attr.aria-label]="showInitialPassword() ? 'Hide password' : 'Show password'" [attr.aria-pressed]="showInitialPassword()" (click)="showInitialPassword.set(!showInitialPassword())"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" /></svg></button></div>
+        @if (createForm.controls.password.touched && createForm.controls.password.invalid) { <small class="field-error" id="staff-password-error">Use at least 8 characters.</small> }
+      </div>
+      <button class="primary-button create-button" type="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="4" /><path d="M2 21v-2c0-3 3-5 7-5s7 2 7 5v2M19 7v8M15 11h8" /></svg>Create staff account</button>
+    </form>
+  </section>
+
+  @if (isAdmin()) {
+    <section class="panel manage-panel" aria-labelledby="manage-staff-title">
+      <div class="manage-toolbar">
+        <div class="panel-heading">
+          <span class="panel-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="9" cy="8" r="3" /><path d="M2 20v-1c0-3 3-5 7-5s7 2 7 5v1M17 6a3 3 0 0 1 0 6M17 14c3 0 5 2 5 5v1" /></svg></span>
+          <div><h2 id="manage-staff-title">Manage staff access</h2><p>Disabled accounts cannot sign in. Admin accounts cannot be changed here.</p></div>
+        </div>
+        <div class="table-controls">
+          <label class="search-control"><span class="visually-hidden">Search staff by name or email</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></svg><input type="search" placeholder="Search by name or email..." [value]="staffSearch()" (input)="setStaffSearch($event)" /></label>
+          <label class="filter-control"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 5h18l-7 8v5l-4 2v-7L3 5Z" /></svg><span>Filter</span><select aria-label="Filter staff by status" [value]="statusFilter()" (change)="setStatusFilter($event)"><option value="all">All</option><option value="active">Active</option><option value="disabled">Disabled</option></select></label>
+          <button class="primary-button export-button" type="button" title="Download filtered staff accounts as CSV" (click)="exportStaff()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 16v4h16v-4" /></svg>Export</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="staff-table">
+          <caption class="visually-hidden">Staff login accounts</caption>
+          <thead><tr><th scope="col">No.</th><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col">Last login</th><th scope="col">Created on</th><th scope="col">Actions</th></tr></thead>
+          <tbody>
+            @for (account of visibleStaff(); track account.id; let index = $index) {
+              <tr>
+                <td>{{ staffRangeStart() + index }}</td>
+                <td><div class="staff-cell"><span class="avatar" aria-hidden="true">{{ staffInitial(account) }}</span><span><strong>{{ account.name }}</strong><small>Staff Account</small></span></div></td>
+                <td class="email-cell">{{ account.email }}</td>
+                <td><span class="role-badge">Staff</span></td>
+                <td><span class="status-badge" [class.disabled]="account.status === 'disabled'">{{ account.status }}</span></td>
+                <td>@if (account.lastLoginAt; as loginAt) { <time [attr.datetime]="loginAt">{{ loginAt | date:'yyyy-MM-dd' }}<small>{{ loginAt | date:'hh:mm a' }}</small></time> } @else { <span class="muted">—</span> }</td>
+                <td>@if (account.createdAt; as createdAt) { <time [attr.datetime]="createdAt">{{ createdAt | date:'yyyy-MM-dd' }}</time> } @else { <span class="muted">—</span> }</td>
+                <td><div class="actions">
+                  <button type="button" class="secondary-button" [attr.aria-label]="'Edit ' + account.name" (click)="startEdit(account)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m4 20 4.5-1 10-10-3.5-3.5-10 10L4 20ZM13.5 7l3.5 3.5" /></svg>Edit</button>
+                  <button type="button" class="status-button" [class.enable-button]="account.status === 'disabled'" [attr.aria-label]="(account.status === 'active' ? 'Disable ' : 'Enable ') + account.name" (click)="toggleStatus(account)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="10" width="14" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>{{ account.status === 'active' ? 'Disable' : 'Enable' }}</button>
+                  <button type="button" class="secondary-button" [attr.aria-label]="'Reset password for ' + account.name" (click)="startReset(account.id)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="8" cy="15" r="4" /><path d="M12 15h9M18 15v3M15 15v2" /></svg>Reset password</button>
+                </div></td>
+              </tr>
+              @if (editForId() === account.id) {
+                <tr class="inline-form-row"><td colspan="8"><form class="inline-form" [formGroup]="editForm" (ngSubmit)="saveEdit()"><strong>Edit {{ account.name }}</strong><label>Staff name<input formControlName="name" required /></label><label>Email<input type="email" formControlName="email" required /></label><div class="inline-actions"><button class="primary-button" type="submit">Save changes</button><button class="secondary-button" type="button" (click)="cancelEdit()">Cancel</button></div></form></td></tr>
+              }
+              @if (resetForId() === account.id) {
+                <tr class="inline-form-row"><td colspan="8"><form class="inline-form" [formGroup]="resetForm" (ngSubmit)="savePassword()"><strong>Reset password for {{ account.name }}</strong><label>New password<input type="password" formControlName="password" autocomplete="new-password" minlength="8" required /></label>@if (resetForm.controls.password.touched && resetForm.controls.password.invalid) { <small class="field-error">Use at least 8 characters.</small> }<div class="inline-actions"><button class="primary-button" type="submit">Save password</button><button class="secondary-button" type="button" (click)="cancelReset()">Cancel</button></div></form></td></tr>
+              }
+            } @empty {
+              <tr><td class="empty-cell" colspan="8">No staff accounts match your search or filter.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer"><p>Showing {{ staffRangeStart() }} to {{ staffRangeEnd() }} of {{ filteredStaff().length }} entries</p><nav class="pagination" aria-label="Staff pages"><button type="button" aria-label="Previous page" [disabled]="currentStaffPage() === 1" (click)="changeStaffPage(-1)">‹</button>@for (page of staffPageNumbers(); track page) { <button type="button" [class.active]="page === currentStaffPage()" [attr.aria-label]="'Page ' + page" [attr.aria-current]="page === currentStaffPage() ? 'page' : null" (click)="goToStaffPage(page)">{{ page }}</button> }<button type="button" aria-label="Next page" [disabled]="currentStaffPage() === staffPageCount()" (click)="changeStaffPage(1)">›</button></nav></div>
+    </section>
+  }
+</section>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="640" viewBox="0 0 440 640" role="img" aria-label="Everyday Systems demo book cover">
+  <rect width="440" height="640" fill="#ebe5d9"/>
+  <circle cx="140" cy="200" r="58" fill="#ba744d"/>
+  <circle cx="300" cy="200" r="58" fill="#2c665b"/>
+  <circle cx="220" cy="310" r="58" fill="#c5a65e"/>
+  <path d="M198 200h44m-102 58 50 48m110-48-50 48" stroke="#193c36" stroke-width="8"/>
+  <text x="220" y="75" text-anchor="middle" fill="#31584e" font-family="Georgia,serif" font-size="22" letter-spacing="4">LIBRARY DEMO</text>
+  <text x="220" y="439" text-anchor="middle" fill="#17392f" font-family="Georgia,serif" font-size="48">Everyday</text>
+  <text x="220" y="495" text-anchor="middle" fill="#17392f" font-family="Georgia,serif" font-size="48">Systems</text>
+  <text x="220" y="570" text-anchor="middle" fill="#6e4d31" font-family="Georgia,serif" font-size="27">M. TAN</text>
+</svg>

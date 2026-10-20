@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="640" viewBox="0 0 440 640" role="img" aria-label="The Lantern Atlas demo book cover">
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#142d34"/><stop offset="1" stop-color="#101b2b"/></linearGradient>
+  </defs>
+  <rect width="440" height="640" fill="url(#sky)"/>
+  <path d="M0 490 70 465 145 485 225 450 295 470 365 445 440 475V640H0Z" fill="#1d3940"/>
+  <path d="M220 210v150m-53-109h106m-92-14 12 78h54l12-78Z" fill="none" stroke="#e6b867" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M195 255h50l-8 51h-34Z" fill="#e6b867" opacity=".64"/>
+  <circle cx="220" cy="270" r="85" fill="#e6b867" opacity=".09"/>
+  <text x="220" y="74" text-anchor="middle" fill="#e9d8af" font-family="Georgia,serif" font-size="22" letter-spacing="4">LIBRARY DEMO</text>
+  <text x="220" y="400" text-anchor="middle" fill="#fff6e7" font-family="Georgia,serif" font-size="48">The Lantern</text>
+  <text x="220" y="458" text-anchor="middle" fill="#fff6e7" font-family="Georgia,serif" font-size="48">Atlas</text>
+  <text x="220" y="550" text-anchor="middle" fill="#e6b867" font-family="Georgia,serif" font-size="27">A. RAHMAN</text>
+</svg>

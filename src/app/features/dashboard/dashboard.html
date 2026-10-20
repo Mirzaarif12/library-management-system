@@ -1,0 +1,239 @@
+<main class="dashboard-page">
+  @if (canViewStaffSummary()) {
+    <div class="staff-dashboard">
+      <header class="dashboard-hero" aria-labelledby="dashboard-title">
+        <div>
+          <p class="eyebrow">WELCOME BACK</p>
+          <h2 id="dashboard-title">Dashboard</h2>
+          <p>Manage your library system, track reservations, and keep knowledge flowing.</p>
+        </div>
+        <blockquote class="hero-quote">
+          <p>“A library is a universe of possibilities.”</p>
+          <span aria-hidden="true"></span>
+        </blockquote>
+      </header>
+
+      <section class="dashboard-panel overview-panel" aria-labelledby="staff-overview-title">
+        <div class="panel-heading">
+          <div class="heading-title">
+            <span class="heading-icon" aria-hidden="true">▤</span>
+            <h3 id="staff-overview-title">Library overview</h3>
+          </div>
+          <time [attr.datetime]="today">{{ todayLabel }}</time>
+        </div>
+
+        <div class="overview-grid">
+          <article class="overview-card sage">
+            <span class="overview-icon" aria-hidden="true">▤</span>
+            <div><h4>Book titles</h4><p>{{ totalBookTitles() }}</p></div>
+          </article>
+          <article class="overview-card gold">
+            <span class="overview-icon" aria-hidden="true">▥</span>
+            <div><h4>Total copies</h4><p>{{ totalCopies() }}</p></div>
+          </article>
+          <article class="overview-card sage">
+            <span class="overview-icon" aria-hidden="true">▣</span>
+            <div><h4>Available copies</h4><p>{{ availableCopies() }}</p></div>
+          </article>
+          <article class="overview-card gold">
+            <span class="overview-icon" aria-hidden="true">♙</span>
+            <div><h4>Members</h4><p>{{ totalMembers() }}</p></div>
+          </article>
+          <article class="overview-card rose">
+            <span class="overview-icon" aria-hidden="true">⊘</span>
+            <div><h4>Suspended members</h4><p>{{ suspendedMembers() }}</p></div>
+          </article>
+          <article class="overview-card sage">
+            <span class="overview-icon" aria-hidden="true">▤</span>
+            <div><h4>Active loans</h4><p>{{ activeLoans() }}</p></div>
+          </article>
+          <article class="overview-card rose">
+            <span class="overview-icon" aria-hidden="true">◷</span>
+            <div><h4>Overdue loans</h4><p>{{ overdueLoans() }}</p></div>
+          </article>
+          <article class="overview-card gold">
+            <span class="overview-icon currency-icon" aria-hidden="true">RM</span>
+            <div>
+              <h4>Estimated fines and unpaid member charges</h4>
+              <p>RM {{ estimatedFines().toFixed(2) }}</p>
+            </div>
+          </article>
+        </div>
+
+        @if (overdueReplacementCharges() > 0) {
+          <p class="dashboard-alert" role="alert">
+            {{ overdueReplacementCharges() }} unpaid member charge(s) are past their payment deadline.
+            <a routerLink="/returns">
+              Review charges <span aria-hidden="true">→</span>
+            </a>
+          </p>
+        }
+
+        <nav class="dashboard-shortcuts" aria-label="Staff shortcuts">
+          <a class="shortcut-primary" routerLink="/members"><span aria-hidden="true">♙</span>Manage members</a>
+          <a routerLink="/borrowings"><span aria-hidden="true">⇄</span>Manage borrowings</a>
+          <a routerLink="/reservations"><span aria-hidden="true">▣</span>Open reservation queue</a>
+        </nav>
+      </section>
+
+      @if (isAdmin()) {
+        <section class="dashboard-panel demo-data-panel" aria-labelledby="demo-data-title">
+          <div>
+            <h3 id="demo-data-title">Demo data</h3>
+            <p>Add three sample books and linked loans, reservations, charges, and stock history in this browser. Sample loans and charges will be assigned to two existing active members. Existing records will not be replaced.</p>
+          </div>
+          <button
+            type="button"
+            (click)="loadDemoData()"
+            [disabled]="!demoDataService.ready() || demoDataService.loaded()"
+          >{{ demoDataService.loaded() ? 'Demo data loaded' : 'Load demo data' }}</button>
+          @if (demoDataMessage()) {
+            <p class="demo-data-message" role="status">{{ demoDataMessage() }}</p>
+          }
+        </section>
+      }
+
+      <div class="dashboard-bottom-grid">
+        <section class="dashboard-panel reservation-summary" aria-labelledby="reservation-summary-title">
+          <div class="panel-heading">
+            <div class="heading-title">
+              <span class="heading-icon" aria-hidden="true">▦</span>
+              <h3 id="reservation-summary-title">Reservation summary</h3>
+            </div>
+            <a class="panel-link" routerLink="/reservations">View all <span aria-hidden="true">→</span></a>
+          </div>
+
+          <div class="reservation-stats">
+            <article class="reservation-stat waiting">
+              <span class="status-icon" aria-hidden="true">⌛</span>
+              <div><h4>Waiting</h4><p>{{ waitingReservations() }}</p></div>
+            </article>
+            <article class="reservation-stat ready">
+              <span class="status-icon" aria-hidden="true">▣</span>
+              <div><h4>Ready for pickup</h4><p>{{ readyReservations() }}</p></div>
+            </article>
+            <article class="reservation-stat collected">
+              <span class="status-icon" aria-hidden="true">✓</span>
+              <div><h4>Collected</h4><p>{{ collectedReservations() }}</p></div>
+            </article>
+            <article class="reservation-stat cancelled">
+              <span class="status-icon" aria-hidden="true">×</span>
+              <div><h4>Cancelled</h4><p>{{ cancelledReservations() }}</p></div>
+            </article>
+            <article class="reservation-stat expired">
+              <span class="status-icon" aria-hidden="true">◷</span>
+              <div><h4>Expired</h4><p>{{ expiredReservations() }}</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="dashboard-panel recent-reservations" aria-labelledby="recent-reservations-title">
+          <div class="panel-heading">
+            <div class="heading-title">
+              <span class="heading-icon" aria-hidden="true">▤</span>
+              <h3 id="recent-reservations-title">Recent reservation history</h3>
+            </div>
+            <a class="panel-link" routerLink="/reservations">Open history <span aria-hidden="true">→</span></a>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <caption class="visually-hidden">The five most recently requested reservations</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Reservation ID</th>
+                  <th scope="col">Member</th>
+                  <th scope="col">Book</th>
+                  <th scope="col">Requested</th>
+                  <th scope="col">Pickup deadline</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (reservation of recentReservations(); track reservation.id) {
+                  <tr>
+                    <td>{{ reservation.id }}</td>
+                    <td>{{ memberName(reservation.memberId) }}</td>
+                    <td>{{ bookTitle(reservation.bookId) }}</td>
+                    <td>{{ shortDate(reservation.requestedAt) }}</td>
+                    <td>{{ shortDate(reservation.pickupDeadline) }}</td>
+                    <td><span class="status-pill" [class]="'status-pill status-' + reservation.status">{{ reservation.status }}</span></td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="6" class="empty-cell">No reservation history yet.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  } @else if (isMember()) {
+    <div class="member-dashboard">
+      <header class="member-header">
+        <p class="eyebrow">OVERVIEW</p>
+        <h2>Dashboard</h2>
+        <p>Your library activity at a glance.</p>
+      </header>
+
+      <section class="dashboard-panel" aria-labelledby="member-overview-title">
+        <h3 id="member-overview-title">Your library activity</h3>
+
+        <div class="member-stat-grid">
+          <article class="member-stat-card">
+            <h4>Books on loan</h4>
+            <p>{{ myActiveLoans() }}</p>
+          </article>
+          <article class="member-stat-card">
+            <h4>Overdue books</h4>
+            <p>{{ myOverdueLoans() }}</p>
+          </article>
+          <article class="member-stat-card">
+            <h4>Ready for pickup</h4>
+            <p>{{ myReadyPickups() }}</p>
+          </article>
+          <article class="member-stat-card">
+            <h4>Due within 3 days</h4>
+            <p>{{ myDueSoonLoans() }}</p>
+          </article>
+          <article class="member-stat-card">
+            <h4>Outstanding member charges</h4>
+            <p>RM {{ myUnpaidReplacementCharges().toFixed(2) }}</p>
+          </article>
+        </div>
+
+        @if (myOverdueLoans() > 0) {
+          <p class="member-notice overdue" role="alert">
+            You have {{ myOverdueLoans() }} overdue book(s).
+            <a routerLink="/my-loans">Check your loans</a>
+          </p>
+        }
+        @if (myDueSoonLoans() > 0) {
+          <p class="member-notice" role="status">
+            You have {{ myDueSoonLoans() }} book(s) due within three days.
+            <a routerLink="/my-loans">Review due dates</a>
+          </p>
+        }
+        @if (myReadyPickups() > 0) {
+          <p class="member-notice" role="status">
+            You have a reservation ready for pickup.
+            <a routerLink="/my-reservations">Check the pickup deadline</a>
+          </p>
+        }
+
+        @if (myOverdueReplacementCharges() > 0) {
+          <p class="member-notice overdue" role="alert">
+            You have {{ myOverdueReplacementCharges() }} unpaid member charge(s) past the payment deadline.
+            <a routerLink="/my-loans">Review charges</a>
+          </p>
+        }
+
+        <nav class="member-shortcuts" aria-label="Member shortcuts">
+          <a routerLink="/books">Browse books</a>
+          <a routerLink="/my-loans">My loans</a>
+          <a routerLink="/my-reservations">My reservations</a>
+        </nav>
+      </section>
+    </div>
+  }
+</main>

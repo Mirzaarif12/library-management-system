@@ -1,0 +1,527 @@
+<main class="returns-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">CIRCULATION</p>
+      <h2>Returns</h2>
+      <p class="subtitle">Record returned books and review outstanding loans.</p>
+    </div>
+  </header>
+
+  @if (feedback()) {
+    <p class="feedback-message" role="status">{{ feedback() }}</p>
+  }
+
+  <section class="returns-panel data-panel" aria-labelledby="active-loans-title">
+    <div class="data-panel-toolbar">
+      <div class="data-panel-heading">
+        <span class="section-icon" aria-hidden="true">↩</span>
+        <div>
+          <h3 id="active-loans-title">Active loans</h3>
+          <p>Books currently checked out and awaiting return.</p>
+          <span class="loan-count">{{ activeLoans().length }} {{ activeLoans().length === 1 ? 'active loan' : 'active loans' }}</span>
+        </div>
+      </div>
+
+      <div class="table-controls">
+        <label class="search-control">
+          <span class="visually-hidden">Search active loans</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
+          <input type="search" placeholder="Search loan, member, or book..." [value]="loanSearch()" (input)="setLoanSearch(readText($event))" />
+        </label>
+        <label class="select-control">
+          <span class="visually-hidden">Filter active loans by status</span>
+          <select [value]="loanStatusFilter()" (change)="setLoanStatusFilter(readText($event))">
+            <option value="all">All loans</option>
+            <option value="on-loan">On loan</option>
+            <option value="due-soon">Due within 3 days</option>
+            <option value="overdue">Overdue</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="returns-table detail-table active-loans-table">
+        <caption class="visually-hidden">Books currently checked out</caption>
+        <thead>
+          <tr>
+            <th scope="col">No.</th>
+            <th scope="col">Loan ID</th>
+            <th scope="col">Member</th>
+            <th scope="col">Book</th>
+            <th scope="col">Due date</th>
+            <th scope="col">Status</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (loan of visibleLoans(); track loan.id; let index = $index) {
+            @let daysRemaining = daysUntilDue(loan.dueAt);
+            <tr>
+              <td>{{ loanRangeStart() + index }}</td>
+              <td class="record-id">{{ loan.id }}</td>
+              <td>
+                <div class="member-cell">
+                  <span class="member-avatar" aria-hidden="true">{{ memberInitial(loan.memberId) }}</span>
+                  <span><strong>{{ memberName(loan.memberId) }}</strong><small>{{ loan.memberId }}</small></span>
+                </div>
+              </td>
+              <td>
+                <div class="book-cell">
+                  @if (bookCover(loan.bookId); as coverUrl) {
+                    <img [ngSrc]="coverUrl" width="42" height="60" alt="" />
+                  } @else {
+                    <span class="cover-placeholder" aria-hidden="true">▤</span>
+                  }
+                  <span><strong>{{ bookTitle(loan.bookId) }}</strong><small>{{ bookCategory(loan.bookId) }}</small></span>
+                </div>
+              </td>
+              <td>
+                <div class="due-date-cell">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <rect x="3" y="5" width="18" height="16" rx="2" />
+                    <path d="M7 3v4M17 3v4M3 10h18" />
+                  </svg>
+                  <span>
+                    <time [attr.datetime]="loan.dueAt">{{ loan.dueAt }}</time>
+                    <small [class.due-date-warning]="daysRemaining <= 3">
+                      {{ dueDateSummary(daysRemaining) }}
+                    </small>
+                  </span>
+                </div>
+              </td>
+              <td>
+                <span class="loan-status" [class.overdue]="loan.dueAt < today">
+                  {{ loan.dueAt < today ? 'Overdue' : 'On loan' }}
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons return-actions">
+                  <button
+                    class="secondary-button return-action"
+                    type="button"
+                    [attr.aria-label]="'Record return for ' + bookTitle(loan.bookId) + ', loan ' + loan.id"
+                    (click)="returnLoan(loan.id)"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                      <path d="M7 4h10l3 3v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7l3-3Z" />
+                      <path d="M4 9h16M9 14h6M12 11l-3 3 3 3" />
+                    </svg>
+                    Record return
+                  </button>
+
+                  <button
+                    class="secondary-button return-action return-action-damaged"
+                    type="button"
+                    [attr.aria-label]="'Report damaged return for ' + bookTitle(loan.bookId) + ', loan ' + loan.id"
+                    [attr.aria-controls]="'damage-form-' + loan.id"
+                    [attr.aria-expanded]="damagedBorrowingId() === loan.id"
+                    (click)="openDamagedForm(loan.id)"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                      <path d="m12 3 10 18H2L12 3Z" />
+                      <path d="M12 9v5M12 18h.01" />
+                    </svg>
+                    Report damaged
+                  </button>
+
+                  <button
+                    class="danger-button return-action return-action-lost"
+                    type="button"
+                    [attr.aria-label]="'Mark ' + bookTitle(loan.bookId) + ' as lost, loan ' + loan.id"
+                    (click)="openLostForm(loan.id)"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                      <path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6" />
+                    </svg>
+                    Mark as lost
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            @if (damagedBorrowingId() === loan.id) {
+              <tr class="loss-form-row damage-form-row">
+                <td colspan="7">
+                  <form
+                    [id]="'damage-form-' + loan.id"
+                    class="damage-form"
+                    (submit)="$event.preventDefault(); confirmDamaged(loan.id)"
+                  >
+                    <div class="damage-form-heading">
+                      <div>
+                        <p class="damage-form-eyebrow">RETURN CONDITION</p>
+                        <h4>Report damaged book</h4>
+                        <p class="damage-form-context">
+                          {{ bookTitle(loan.bookId) }} · {{ memberName(loan.memberId) }} · {{ loan.id }}
+                        </p>
+                      </div>
+                      <span class="damage-form-badge">Damage report</span>
+                    </div>
+
+                    <div class="damage-form-fields">
+                      <label [for]="'damage-severity-' + loan.id">
+                        <span>Damage severity <span class="required-mark" aria-hidden="true">*</span></span>
+                        <select
+                          [id]="'damage-severity-' + loan.id"
+                          required
+                          [value]="damageSeverity()"
+                          (change)="damageSeverity.set(readText($event))"
+                        >
+                          <option value="">Choose severity</option>
+                          <option value="minor">Minor — copy remains usable</option>
+                          <option value="moderate">Moderate — copy needs repair</option>
+                          <option value="severe">Severe — remove copy</option>
+                        </select>
+                      </label>
+
+                      <label [for]="'damage-responsibility-' + loan.id">
+                        <span>Is the borrower responsible? <span class="required-mark" aria-hidden="true">*</span></span>
+                        <select
+                          [id]="'damage-responsibility-' + loan.id"
+                          required
+                          [value]="damageResponsibility()"
+                          (change)="damageResponsibility.set(readText($event))"
+                        >
+                          <option value="">Choose responsibility</option>
+                          <option value="yes">Yes — charge the borrower</option>
+                          <option value="no">No — no damage charge</option>
+                        </select>
+                      </label>
+                    </div>
+
+                    <p class="damage-form-guidance">
+                      <strong>How charges are calculated</strong>
+                      If the borrower is responsible: minor damage costs RM 5 (capped at the book price), moderate damage costs 35% of the book price, and severe damage costs the full book price. Any overdue fine is separate.
+                    </p>
+
+                    <label class="damage-note-field" [for]="'damage-note-' + loan.id">
+                      <span>Describe the damage <span class="required-mark" aria-hidden="true">*</span></span>
+                      <textarea
+                        [id]="'damage-note-' + loan.id"
+                        required
+                        rows="4"
+                        placeholder="Describe what happened and the condition of the book"
+                        [value]="damageNote()"
+                        (input)="damageNote.set(readText($event))"
+                      ></textarea>
+                    </label>
+
+                    <div class="damage-form-actions">
+                      <button class="secondary-button" type="button" (click)="cancelDamagedForm()">
+                        Cancel
+                      </button>
+                      <button class="confirm-damage-button" type="submit">
+                        Confirm damaged return
+                      </button>
+                    </div>
+                  </form>
+                </td>
+              </tr>
+            }
+            @if (lostBorrowingId() === loan.id) {
+              <tr class="loss-form-row">
+                <td colspan="7">
+                  <form
+                    class="loss-form"
+                    (submit)="$event.preventDefault(); confirmLost(loan.id)"
+                  >
+                    <label [for]="'payment-deadline-' + loan.id">
+                      Payment deadline
+                      <input
+                        [id]="'payment-deadline-' + loan.id"
+                        type="date"
+                        required
+                        [min]="today"
+                        [value]="paymentDueAt()"
+                        (input)="paymentDueAt.set($any($event.target).value)"
+                      />
+                    </label>
+
+                    <button class="danger-button" type="submit">
+                      Confirm book lost
+                    </button>
+
+                    <button
+                      class="secondary-button"
+                      type="button"
+                      (click)="cancelLostForm()"
+                    >
+                      Cancel
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            }
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty-table-cell">No active loans match this view.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="table-footer">
+      <p>Showing {{ loanRangeStart() }} to {{ loanRangeEnd() }} of {{ filteredLoans().length }} entries</p>
+      <nav class="pagination" aria-label="Active loan pages">
+        <button type="button" aria-label="Previous page" [disabled]="currentLoanPage() === 1" (click)="changeLoanPage(-1)">‹</button>
+        <span aria-current="page">{{ currentLoanPage() }} / {{ loanPageCount() }}</span>
+        <button type="button" aria-label="Next page" [disabled]="currentLoanPage() === loanPageCount()" (click)="changeLoanPage(1)">›</button>
+      </nav>
+    </div>
+  </section>
+  <section class="returns-panel data-panel" aria-labelledby="pending-repairs-title">
+    <div class="data-panel-toolbar">
+      <div class="data-panel-heading">
+        <span class="section-icon" aria-hidden="true">⚒</span>
+        <div>
+          <h3 id="pending-repairs-title">Pending repairs</h3>
+          <p>Moderately damaged copies stay unavailable until a repair is recorded.</p>
+          <span class="repair-count">{{ pendingRepairs().length }} {{ pendingRepairs().length === 1 ? 'book' : 'books' }} pending repair</span>
+        </div>
+      </div>
+
+      <div class="table-controls">
+        <label class="search-control">
+          <span class="visually-hidden">Search pending repairs</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
+          <input type="search" placeholder="Search loan, book, or member..." [value]="repairSearch()" (input)="repairSearch.set(readText($event))" />
+        </label>
+        <label class="select-control">
+          <span class="visually-hidden">Filter repairs by return date</span>
+          <select [value]="repairAgeFilter()" (change)="setRepairAgeFilter(readText($event))">
+            <option value="all">All returns</option>
+            <option value="recent">Last 7 days</option>
+            <option value="older">Older than 7 days</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="returns-table detail-table repair-table">
+        <caption class="visually-hidden">Returned books awaiting repair</caption>
+        <thead>
+          <tr>
+            <th scope="col">No.</th>
+            <th scope="col">Loan ID</th>
+            <th scope="col">Book</th>
+            <th scope="col">Member</th>
+            <th scope="col">Returned date</th>
+            <th scope="col">Condition</th>
+            <th scope="col">Repair status</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (loan of visibleRepairs(); track loan.id; let index = $index) {
+            <tr>
+              <td>{{ index + 1 }}</td>
+              <td class="record-id">{{ loan.id }}</td>
+              <td>
+                <div class="book-cell">
+                  @if (bookCover(loan.bookId); as coverUrl) {
+                    <img [ngSrc]="coverUrl" width="42" height="60" alt="" />
+                  } @else {
+                    <span class="cover-placeholder" aria-hidden="true">▤</span>
+                  }
+                  <span><strong>{{ bookTitle(loan.bookId) }}</strong><small>{{ bookCategory(loan.bookId) }}</small></span>
+                </div>
+              </td>
+              <td>
+                <div class="member-cell">
+                  <span class="member-avatar" aria-hidden="true">{{ memberInitial(loan.memberId) }}</span>
+                  <span><strong>{{ memberName(loan.memberId) }}</strong><small>{{ loan.memberId }}</small></span>
+                </div>
+              </td>
+              <td>
+                <div class="stacked-date">
+                  <time [attr.datetime]="loan.returnedAt">{{ loan.returnedAt }}</time>
+                  @if (loan.returnedAt) { <small>{{ returnedDateSummary(loan.returnedAt) }}</small> }
+                </div>
+              </td>
+              <td><span class="table-badge badge-amber">Moderate damage</span></td>
+              <td><span class="table-badge badge-amber">Pending repair</span></td>
+              <td>
+                <button
+                  class="secondary-button table-action"
+                  type="button"
+                  [attr.aria-label]="'Record completed repair for ' + bookTitle(loan.bookId) + ', loan ' + loan.id"
+                  [attr.aria-controls]="repairBorrowingId() === loan.id ? 'repair-form-' + loan.id : null"
+                  [attr.aria-expanded]="repairBorrowingId() === loan.id"
+                  (click)="openRepairForm(loan.id)"
+                >Record completed repair</button>
+              </td>
+            </tr>
+
+            @if (repairBorrowingId() === loan.id) {
+              <tr class="loss-form-row">
+                <td colspan="8">
+                  <form [id]="'repair-form-' + loan.id" class="loss-form inline-action-form" (submit)="$event.preventDefault(); confirmRepair(loan.id)">
+                    <label [for]="'repair-note-' + loan.id">
+                      What was repaired?
+                      <textarea [id]="'repair-note-' + loan.id" required rows="2" [value]="repairNote()" (input)="repairNote.set(readText($event))"></textarea>
+                    </label>
+                    <button class="secondary-button" type="submit">Confirm repair</button>
+                    <button class="secondary-button" type="button" (click)="cancelRepairForm()">Cancel</button>
+                  </form>
+                </td>
+              </tr>
+            }
+          } @empty {
+            <tr><td colspan="8" class="empty-table-cell">No pending repairs match this view.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="returns-panel data-panel" aria-labelledby="member-charges-title">
+    <div class="data-panel-toolbar">
+      <div class="data-panel-heading">
+        <span class="section-icon" aria-hidden="true">▥</span>
+        <div>
+          <h3 id="member-charges-title">Member charges</h3>
+          <p>Track lost-book replacement charges, damage charges, and late-return fines.</p>
+        </div>
+      </div>
+
+      <div class="table-controls">
+        <label class="search-control">
+          <span class="visually-hidden">Search member charges</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
+          <input type="search" placeholder="Search member, book, or charge ID..." [value]="chargeSearch()" (input)="setChargeSearch(readText($event))" />
+        </label>
+        <label class="select-control">
+          <span class="visually-hidden">Filter charges by reason</span>
+          <select [value]="chargeReasonFilter()" (change)="setChargeReasonFilter(readText($event))">
+            <option value="all">All reasons</option>
+            <option value="late-return">Late returns</option>
+            <option value="borrower-damaged-book">Damage</option>
+            <option value="borrower-lost-book">Lost books</option>
+          </select>
+        </label>
+        <button class="export-button" type="button" (click)="exportCharges()">Export CSV</button>
+      </div>
+    </div>
+
+    <div class="charge-tabs" role="group" aria-label="Filter charges by payment status">
+      <button type="button" [class.active]="chargeStatusFilter() === 'all'" [attr.aria-pressed]="chargeStatusFilter() === 'all'" (click)="setChargeStatusFilter('all')">All charges</button>
+      <button type="button" [class.active]="chargeStatusFilter() === 'unpaid'" [attr.aria-pressed]="chargeStatusFilter() === 'unpaid'" (click)="setChargeStatusFilter('unpaid')">Unpaid</button>
+      <button type="button" [class.active]="chargeStatusFilter() === 'paid'" [attr.aria-pressed]="chargeStatusFilter() === 'paid'" (click)="setChargeStatusFilter('paid')">Paid</button>
+      <button type="button" [class.active]="chargeStatusFilter() === 'waived'" [attr.aria-pressed]="chargeStatusFilter() === 'waived'" (click)="setChargeStatusFilter('waived')">Waived</button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="returns-table detail-table charge-table">
+        <caption class="visually-hidden">Member charges and payment status</caption>
+        <thead>
+          <tr>
+            <th scope="col">No.</th>
+            <th scope="col">Charge ID</th>
+            <th scope="col">Member</th>
+            <th scope="col">Book</th>
+            <th scope="col">Reason</th>
+            <th scope="col">Issued date</th>
+            <th scope="col">Payment deadline</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Status</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (charge of visibleCharges(); track charge.id; let index = $index) {
+            <tr>
+              <td>{{ chargeRangeStart() + index }}</td>
+              <td class="record-id">{{ charge.id }}</td>
+              <td>
+                <div class="member-cell">
+                  <span class="member-avatar" aria-hidden="true">{{ memberInitial(charge.memberId) }}</span>
+                  <span><strong>{{ memberName(charge.memberId) }}</strong><small>{{ charge.memberId }}</small></span>
+                </div>
+              </td>
+              <td>
+                <div class="book-cell">
+                  @if (bookCover(charge.bookId); as coverUrl) {
+                    <img [ngSrc]="coverUrl" width="42" height="60" alt="" />
+                  } @else {
+                    <span class="cover-placeholder" aria-hidden="true">▤</span>
+                  }
+                  <span><strong>{{ bookTitle(charge.bookId) }}</strong><small>{{ bookCategory(charge.bookId) }}</small></span>
+                </div>
+              </td>
+              <td>{{ chargeReasonLabel(charge) }}</td>
+              <td><time [attr.datetime]="charge.issuedAt">{{ charge.issuedAt }}</time></td>
+              <td>
+                <div class="stacked-date">
+                  <time [attr.datetime]="charge.paymentDueAt">{{ charge.paymentDueAt }}</time>
+                  <small [class.deadline-warning]="daysUntilDue(charge.paymentDueAt) <= 30">{{ dueDateSummary(daysUntilDue(charge.paymentDueAt)) }}</small>
+                </div>
+              </td>
+              <td class="charge-amount">RM {{ charge.amount.toFixed(2) }}</td>
+              <td>
+                <div class="charge-status">
+                  <span class="table-badge" [class.badge-unpaid]="charge.status === 'unpaid'" [class.badge-paid]="charge.status === 'paid'" [class.badge-waived]="charge.status === 'waived'">
+                    {{ charge.status === 'unpaid' && charge.paymentDueAt < today ? 'Overdue' : charge.status }}
+                  </span>
+                  @if (charge.status === 'paid' && charge.paidAt) { <small>Paid on {{ charge.paidAt }}</small> }
+                  @if (charge.status === 'waived' && charge.waivedAt) { <small>Waived on {{ charge.waivedAt }}</small> }
+                </div>
+              </td>
+              <td>
+                @if (charge.status === 'unpaid') {
+                  <div class="charge-actions">
+                    <button class="charge-pay-button" type="button" [attr.aria-label]="'Record payment for charge ' + charge.id" (click)="recordPayment(charge.id)">Record payment</button>
+                    <button class="charge-waive-button" type="button" [attr.aria-label]="'Waive charge ' + charge.id" [attr.aria-controls]="waiveChargeId() === charge.id ? 'waiver-form-' + charge.id : null" [attr.aria-expanded]="waiveChargeId() === charge.id" (click)="openWaiverForm(charge.id)">Waive</button>
+                  </div>
+                } @else {
+                  <button class="secondary-button table-action" type="button" [attr.aria-label]="'View details for charge ' + charge.id" [attr.aria-controls]="chargeDetailId() === charge.id ? 'charge-details-' + charge.id : null" [attr.aria-expanded]="chargeDetailId() === charge.id" (click)="toggleChargeDetails(charge.id)">View details</button>
+                }
+              </td>
+            </tr>
+
+            @if (chargeDetailId() === charge.id) {
+              <tr class="charge-detail-row">
+                <td colspan="10">
+                  <div class="charge-detail-content" [id]="'charge-details-' + charge.id">
+                    <strong>Charge {{ charge.id }}</strong>
+                    <span>Loan: {{ charge.borrowingId }}</span>
+                    <span>Reason: {{ chargeReasonLabel(charge) }}</span>
+                    <span>Amount: RM {{ charge.amount.toFixed(2) }}</span>
+                    @if (charge.waiverReason) { <span>Waiver reason: {{ charge.waiverReason }}</span> }
+                    <button class="secondary-button" type="button" (click)="toggleChargeDetails(charge.id)">Close details</button>
+                  </div>
+                </td>
+              </tr>
+            }
+
+            @if (waiveChargeId() === charge.id) {
+              <tr class="loss-form-row">
+                <td colspan="10">
+                  <form [id]="'waiver-form-' + charge.id" class="loss-form inline-action-form" (submit)="$event.preventDefault(); confirmWaiver(charge.id)">
+                    <label [for]="'waiver-reason-' + charge.id">
+                      Reason for waiving this charge
+                      <textarea [id]="'waiver-reason-' + charge.id" required rows="2" [value]="waiverReason()" (input)="waiverReason.set(readText($event))"></textarea>
+                    </label>
+                    <button class="danger-button" type="submit">Confirm waiver</button>
+                    <button class="secondary-button" type="button" (click)="cancelWaiver()">Cancel</button>
+                  </form>
+                </td>
+              </tr>
+            }
+          } @empty {
+            <tr><td colspan="10" class="empty-table-cell">No member charges match this view.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <p>Showing {{ chargeRangeStart() }} to {{ chargeRangeEnd() }} of {{ filteredCharges().length }} entries</p>
+      <nav class="pagination" aria-label="Member charge pages">
+        <button type="button" aria-label="Previous page" [disabled]="currentChargePage() === 1" (click)="changeChargePage(-1)">‹</button>
+        <span aria-current="page">{{ currentChargePage() }} / {{ chargePageCount() }}</span>
+        <button type="button" aria-label="Next page" [disabled]="currentChargePage() === chargePageCount()" (click)="changeChargePage(1)">›</button>
+      </nav>
+    </div>
+  </section>
+</main>

@@ -1,0 +1,85 @@
+<main class="auth-page">
+  <section class="auth-card" aria-labelledby="signup-title">
+    <p class="auth-eyebrow">LIBRARY MANAGEMENT SYSTEM</p>
+    <h1 id="signup-title">Create a member account</h1>
+    <p class="auth-description">
+      Join the library to browse, borrow, and reserve books.
+    </p>
+
+    <form
+      class="auth-form"
+      [formGroup]="signupForm"
+      (ngSubmit)="submit()"
+    >
+      <label class="auth-field" for="signup-name">Full name</label>
+      <input
+        class="auth-input"
+        id="signup-name"
+        formControlName="name"
+        autocomplete="name"
+      />
+      <!-- Keep the name validation message here -->
+
+      <label class="auth-field" for="signup-ic">IC number</label>
+      <input
+        class="auth-input"
+        id="signup-ic"
+        formControlName="icNo"
+      />
+      <!-- Keep the IC number validation message here -->
+
+      <label class="auth-field" for="signup-email">Email</label>
+      <input
+        class="auth-input"
+        id="signup-email"
+        type="email"
+        formControlName="email"
+        autocomplete="email"
+      />
+      <!-- Keep the email validation message here -->
+
+      <label class="auth-field" for="signup-phone">Phone</label>
+      <input
+        class="auth-input"
+        id="signup-phone"
+        type="tel"
+        formControlName="phone"
+        autocomplete="tel"
+      />
+      <!-- Keep the phone validation message here -->
+
+      <label class="auth-field" for="signup-password">Password</label>
+      <input
+        class="auth-input"
+        id="signup-password"
+        type="password"
+        formControlName="password"
+        autocomplete="new-password"
+      />
+      <!-- Keep the password validation message here -->
+
+      <label class="auth-field" for="signup-confirm-password">
+        Confirm password
+      </label>
+      <input
+        class="auth-input"
+        id="signup-confirm-password"
+        type="password"
+        formControlName="confirmPassword"
+        autocomplete="new-password"
+      />
+      <!-- Keep the password-mismatch message here -->
+
+      @if (errorMessage()) {
+        <p class="auth-error" role="alert">{{ errorMessage() }}</p>
+      }
+
+      <button class="auth-submit" type="submit">Create account</button>
+    </form>
+
+    <p class="auth-footer">
+      Already have an account?
+      <a routerLink="/login">Sign in</a>
+    </p>
+  </section>
+</main>

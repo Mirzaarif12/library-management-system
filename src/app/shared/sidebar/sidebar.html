@@ -1,0 +1,55 @@
+@if (currentUser(); as user) {
+  <nav aria-label="Main navigation">
+    <div class="sidebar-brand">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <p>Library<br />Management<br />System</p>
+    </div>
+    
+    <a routerLink="/dashboard" routerLinkActive="active" ariaCurrentWhenActive="page">
+      Dashboard
+    </a>
+
+    <a routerLink="/books" routerLinkActive="active" ariaCurrentWhenActive="page">
+      Books
+    </a>
+
+    @if (user.role === 'member') {
+    <a routerLink="/my-loans" routerLinkActive="active" ariaCurrentWhenActive="page">
+        My loans
+    </a>
+
+    <a routerLink="/my-reservations" routerLinkActive="active" ariaCurrentWhenActive="page">
+        My reservations
+    </a>
+    }
+
+    @if (user.role === 'admin' || user.role === 'staff') {
+      <a routerLink="/staff-accounts" routerLinkActive="active" ariaCurrentWhenActive="page">
+        Staff accounts
+      </a>
+
+      <a routerLink="/members" routerLinkActive="active" ariaCurrentWhenActive="page">
+        Members
+      </a>
+
+      <a routerLink="/borrowings" routerLinkActive="active" ariaCurrentWhenActive="page">
+        Borrowings
+      </a>
+
+      <a routerLink="/returns" routerLinkActive="active" ariaCurrentWhenActive="page">
+        Returns
+      </a>
+
+      <a routerLink="/reservations" routerLinkActive="active" ariaCurrentWhenActive="page">
+        Reservations
+     </a>
+
+    }
+
+    @if (user.role === 'admin') {
+      <a routerLink="/reports" routerLinkActive="active" ariaCurrentWhenActive="page">
+        Reports
+      </a>
+    }
+  </nav>
+}

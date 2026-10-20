@@ -1,0 +1,18 @@
+<header class="topbar">
+  <p class="topbar-title">Library workspace</p>
+
+  @if (authService.currentUser(); as user) {
+    <div class="account-area">
+      <div class="account-avatar" aria-hidden="true">
+        {{ user.email.charAt(0).toUpperCase() }}
+      </div>
+
+      <div class="account-details">
+        <strong>{{ user.email }}</strong>
+        <span>{{ user.role }}</span>
+      </div>
+
+      <button type="button" (click)="signOut()">Sign out</button>
+    </div>
+  }
+</header>

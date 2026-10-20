@@ -1,0 +1,549 @@
+<section class="books-page" [class.member-books-page]="isMember()" aria-labelledby="books-title">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">COLLECTION</p>
+      <h2 id="books-title">Books</h2>
+      <p class="subtitle">
+        {{ isMember() ? 'Explore the collection and reserve books for pickup.' : 'Browse and manage your library collection.' }}
+      </p>
+    </div>
+
+    @if (canManageBooks()) {
+      <button
+        class="primary-button"
+        type="button"
+        (click)="showAddForm() ? closeAddForm() : openAddForm()"
+      >
+        {{ showAddForm() ? 'Cancel' : '+ Add book' }}
+      </button>
+    }
+  </header>
+
+  @if (canManageBooks()) {
+    <section class="book-metrics" aria-label="Collection summary">
+      <article class="metric-card">
+        <span>Total book titles</span>
+        <strong>{{ bookMetrics().titleCount }}</strong>
+      </article>
+
+      <article class="metric-card">
+        <span>Total copies</span>
+        <strong>{{ bookMetrics().totalCopies }}</strong>
+      </article>
+
+      <article class="metric-card">
+        <span>Available copies</span>
+        <strong>{{ bookMetrics().availableCopies }}</strong>
+      </article>
+
+      <article class="metric-card">
+        <span>Borrowed copies</span>
+        <strong>{{ bookMetrics().borrowedCopies }}</strong>
+      </article>
+
+      <article class="metric-card">
+        <span>Overdue loans</span>
+        <strong>{{ bookMetrics().overdueLoans }}</strong>
+      </article>
+    </section>
+  }
+
+  @if (canManageBooks() && stockAdjustmentBookId()) {
+    <form
+      class="book-form stock-adjustment-form"
+      (submit)="$event.preventDefault(); recordStockAdjustment()"
+    >
+      <div class="form-heading">
+        <div>
+          <p class="eyebrow">INVENTORY</p>
+          <h3>
+            Adjust stock for
+            {{ bookTitle(stockAdjustmentBookId() ?? '') }}
+          </h3>
+        </div>
+      </div>
+
+      <p class="form-note">
+        Purchases and donations add available copies. Missing or damaged copies
+        are removed from available stock.
+      </p>
+
+      <div class="form-grid">
+        <label class="field">
+          <span>Reason *</span>
+          <select
+            required
+            [value]="adjustmentReason()"
+            (change)="setAdjustmentReason($event)"
+          >
+            <option value="purchase">Purchase</option>
+            <option value="donation">Donation</option>
+            <option value="missing">Missing in library</option>
+            <option value="damaged">Damaged</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Number of copies *</span>
+          <input
+            required
+            type="number"
+            min="1"
+            step="1"
+            [value]="adjustmentQuantity()"
+            (input)="adjustmentQuantity.set($any($event.target).valueAsNumber)"
+          />
+        </label>
+
+        <label class="field adjustment-note">
+          <span>Note *</span>
+          <textarea
+            required
+            rows="3"
+            [value]="adjustmentNote()"
+            (input)="adjustmentNote.set($any($event.target).value)"
+            placeholder="Explain this stock change"
+          ></textarea>
+        </label>
+      </div>
+
+      @if (adjustmentError()) {
+        <p role="alert">{{ adjustmentError() }}</p>
+      }
+
+      <div class="form-actions">
+        <button
+          class="secondary-button"
+          type="button"
+          (click)="closeStockAdjustment()"
+        >
+          Cancel
+        </button>
+
+        <button class="primary-button" type="submit">
+          Save adjustment
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (canManageBooks() && showAddForm()) {
+    <form class="book-form" (submit)="$event.preventDefault(); saveBook()">
+      <div class="form-heading">
+        <div>
+          <p class="eyebrow">BOOK RECORD</p>
+          <h3>{{ selectedBookId() ? 'Edit book' : 'Add a new book' }}</h3>
+        </div>
+        <p class="form-note">Fields marked required must be completed.</p>
+      </div>
+
+      <fieldset class="form-section">
+        <legend>Basic information</legend>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Title *</span>
+            <input
+              required
+              [value]="newTitle()"
+              (input)="newTitle.set(readInput($event))"
+              placeholder="Enter book title"
+            />
+          </label>
+
+          <label class="field">
+            <span>Author *</span>
+            <input
+              required
+              [value]="newAuthor()"
+              (input)="newAuthor.set(readInput($event))"
+              placeholder="Enter author name"
+            />
+          </label>
+
+          <label class="field">
+            <span>ISBN *</span>
+            <input
+              required
+              [value]="newIsbn()"
+              (input)="newIsbn.set(readInput($event))"
+              placeholder="Enter ISBN"
+            />
+          </label>
+
+          <label class="field">
+            <span>Category</span>
+            <input
+              [value]="newCategory()"
+              (input)="newCategory.set(readInput($event))"
+              placeholder="e.g. Fiction"
+            />
+          </label>
+
+          <label class="field">
+            <span>Replacement price (RM) *</span>
+            <input
+              required
+              type="number"
+              min="0"
+              step="0.01"
+              [value]="newReplacementPrice()"
+              (input)="newReplacementPrice.set($any($event.target).valueAsNumber)"
+              placeholder="e.g. 49.90"
+            />
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>Publication details</legend>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Publisher *</span>
+            <input
+              required
+              [value]="newPublisher()"
+              (input)="newPublisher.set(readInput($event))"
+              placeholder="Enter publisher"
+            />
+          </label>
+
+          <label class="field">
+            <span>Publication year *</span>
+            <input
+              required
+              type="number"
+              min="1000"
+              max="2100"
+              [value]="newPublicationYear()"
+              (input)="newPublicationYear.set($any($event.target).valueAsNumber)"
+            />
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>About this book</legend>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Cover image path</span>
+            <input
+              [value]="newCoverUrl()"
+              (input)="newCoverUrl.set(readInput($event))"
+              maxlength="250"
+              placeholder="/covers/example-book.jpg"
+            />
+          </label>
+
+          <label class="field book-description-field">
+            <span>Description</span>
+            <textarea
+              rows="5"
+              maxlength="1000"
+              [value]="newDescription()"
+              (input)="newDescription.set(readInput($event))"
+              placeholder="What is this book about?"
+            ></textarea>
+          </label>
+        </div>
+      </fieldset>
+
+      @if (!selectedBookId()) {
+        <fieldset class="form-section">
+          <legend>Initial copy information</legend>
+
+          <div class="form-grid">
+            <label class="field">
+              <span>Total copies *</span>
+              <input
+                required
+                type="number"
+                min="1"
+                step="1"
+                [value]="newTotalCopies()"
+                (input)="newTotalCopies.set($any($event.target).valueAsNumber)"
+              />
+            </label>
+
+            <label class="field">
+              <span>Available copies *</span>
+              <input
+                required
+                type="number"
+                min="0"
+                step="1"
+                [value]="newAvailableCopies()"
+                (input)="newAvailableCopies.set($any($event.target).valueAsNumber)"
+              />
+            </label>
+          </div>
+        </fieldset>
+      } @else {
+        <p class="form-note">
+          To change this book’s quantity, use its Adjust stock button after
+          saving the book details.
+        </p>
+      }
+
+      @if (formError()) {
+        <p role="alert">{{ formError() }}</p>
+      }
+
+      <div class="form-actions">
+        <button
+          class="secondary-button"
+          type="button"
+          (click)="closeAddForm()"
+        >
+          Cancel
+        </button>
+
+        <button class="primary-button" type="submit">
+          {{ selectedBookId() ? 'Save changes' : 'Add book' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  <section class="catalog-panel" aria-label="Book catalog">
+    <div class="catalog-toolbar">
+      <label class="search-field">
+        <span class="visually-hidden">Search books</span>
+        @if (isMember()) {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></svg>
+        }
+        <input
+          type="search"
+          [value]="searchText()"
+          (input)="setSearchText($event)"
+          placeholder="Search by title, author, category, or ISBN"
+        />
+      </label>
+
+      <label class="category-field">
+        <span class="visually-hidden">Filter by category</span>
+        <select
+          [value]="selectedCategory()"
+          (change)="setSelectedCategory($event)"
+        >
+          @for (category of categories(); track category) {
+            <option [value]="category">{{ category === 'All' ? 'All categories' : category }}</option>
+          }
+        </select>
+      </label>
+
+      @if (isMember()) {
+        <label class="availability-field">
+          <span class="visually-hidden">Filter by availability</span>
+          <select [value]="availabilityFilter()" (change)="setAvailabilityFilter($event)">
+            <option value="all">All availability</option>
+            <option value="available">Available now</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </label>
+      }
+
+      <label class="sort-field">
+        <span class="visually-hidden">Sort books</span>
+        <select [value]="sortOrder()" (change)="setSortOrder($event)">
+          <option value="title-asc">Title A–Z</option>
+          <option value="title-desc">Title Z–A</option>
+          <option value="author-asc">Author A–Z</option>
+        </select>
+      </label>
+
+      <div class="view-toggle" role="group" aria-label="Book display">
+        <button
+          type="button"
+          [class.active]="viewMode() === 'list'"
+          [attr.aria-pressed]="viewMode() === 'list'"
+          (click)="viewMode.set('list')"
+        >
+          List
+        </button>
+
+        <button
+          type="button"
+          [class.active]="viewMode() === 'grid'"
+          [attr.aria-pressed]="viewMode() === 'grid'"
+          (click)="viewMode.set('grid')"
+        >
+          Grid
+        </button>
+      </div>
+    </div>
+
+    @if (reservationError()) {
+      <p role="alert">{{ reservationError() }}</p>
+    }
+
+    @if (reservationSuccess()) {
+      <p role="status">{{ reservationSuccess() }}</p>
+    }
+
+    <div class="book-list" [class.grid-view]="viewMode() === 'grid'">
+      @for (book of visibleBooks(); track book.id) {
+        <article class="book-card">
+          @if (book.coverUrl; as coverUrl) {
+            <img
+              class="book-cover"
+              [ngSrc]="coverUrl"
+              width="88"
+              height="128"
+              [alt]="'Cover of ' + book.title"
+            />
+          } @else {
+            <div class="book-cover-placeholder">No cover</div>
+          }
+
+          <div class="book-info">
+            <span class="book-id">ID {{ book.id }}</span>
+            <h3>{{ book.title }}</h3>
+            <p class="book-author">by {{ book.author }}</p>
+
+            <div class="book-details">
+              <span class="category-badge">{{ book.category }}</span>
+              <span>{{ book.publicationYear }}</span>
+              <span>{{ book.publisher }}</span>
+              <span>ISBN {{ book.isbn }}</span>
+
+              @if (canManageBooks()) {
+                <span>Replacement cost: RM {{ book.replacementCost }}</span>
+              }
+            </div>
+
+            @if (book.description) {
+              <details class="book-summary">
+                <summary>{{ isMember() ? 'Read description' : 'Read description of ' + book.title }}</summary>
+                <p>{{ book.description }}</p>
+              </details>
+            } @else {
+              <p class="book-summary-empty">Description not added yet.</p>
+            }
+          </div>
+
+          <div class="book-actions" [class.member-actions]="isMember()">
+            @if (isMember()) {
+              <div class="member-availability" [class.unavailable]="availableForReservation(book.id) === 0">
+                <span class="availability-icon" aria-hidden="true">{{ availableForReservation(book.id) > 0 ? '✓' : '×' }}</span>
+                <span>
+                  <strong>{{ availableForReservation(book.id) }} available</strong>
+                  <small>{{ availableForReservation(book.id) > 0 ? 'Copy available' : 'Currently unavailable' }}</small>
+                </span>
+              </div>
+
+              @if (memberReservationStatus(book.id) === 'waiting') {
+                <span class="member-hold-status">Already in the queue</span>
+              } @else if (memberReservationStatus(book.id) === 'ready') {
+                <span class="member-hold-status ready-hold">Ready for your pickup</span>
+              } @else {
+                <button
+                  class="member-reserve-button"
+                  [class.queue-button]="availableForReservation(book.id) === 0"
+                  type="button"
+                  [attr.aria-label]="(availableForReservation(book.id) > 0 ? 'Reserve ' : 'Join the reservation queue for ') + book.title"
+                  (click)="reserveBook(book.id)"
+                >
+                  {{ availableForReservation(book.id) > 0 ? 'Reserve for pickup' : 'Join reservation queue' }}
+                </button>
+              }
+            } @else {
+              <span
+                class="availability"
+                [class.out-of-stock]="availableForReservation(book.id) === 0"
+              >
+                {{
+                  availableForReservation(book.id) === 0
+                    ? 'Out of stock'
+                    : availableForReservation(book.id) + ' available'
+                }}
+              </span>
+            }
+
+            @if (canManageBooks()) {
+              <button
+                class="secondary-button"
+                type="button"
+                [attr.aria-label]="'Edit ' + book.title"
+                (click)="editBook(book)"
+              >
+                Edit
+              </button>
+
+              <button
+                class="secondary-button"
+                type="button"
+                [attr.aria-label]="'Adjust stock for ' + book.title"
+                (click)="openStockAdjustment(book.id)"
+              >
+                Adjust stock
+              </button>
+
+              <button
+                class="secondary-button"
+                type="button"
+                [attr.aria-label]="'Delete ' + book.title"
+                (click)="deleteBook(book)"
+              >
+                Delete
+              </button>
+            }
+          </div>
+        </article>
+      } @empty {
+        <p class="empty-state">No books match your filters.</p>
+      }
+    </div>
+  </section>
+
+  @if (canManageBooks()) {
+    <section
+      class="catalog-panel inventory-history"
+      aria-labelledby="inventory-history-title"
+    >
+      <h3 id="inventory-history-title">Stock adjustment history</h3>
+
+      @if (adjustmentFeedback()) {
+        <p role="status">{{ adjustmentFeedback() }}</p>
+      }
+
+      <div class="inventory-history-table-wrap">
+        <table class="inventory-history-table">
+          <caption>Recorded changes to book stock</caption>
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col">Book</th>
+              <th scope="col">Reason</th>
+              <th scope="col">Quantity</th>
+              <th scope="col">Total change</th>
+              <th scope="col">Available change</th>
+              <th scope="col">Staff</th>
+              <th scope="col">Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (adjustment of inventoryAdjustments(); track adjustment.id) {
+              <tr>
+                <td>{{ adjustment.adjustedAt }}</td>
+                <td>{{ bookTitle(adjustment.bookId) }}</td>
+                <td>{{ adjustmentReasonLabel(adjustment.reason) }}</td>
+                <td>{{ adjustment.quantity }}</td>
+                <td>{{ adjustment.totalCopiesChange }}</td>
+                <td>{{ adjustment.availableCopiesChange }}</td>
+                <td>{{ adjustment.adjustedBy }}</td>
+                <td>{{ adjustment.note }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="8">There are no stock adjustments yet.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</section>

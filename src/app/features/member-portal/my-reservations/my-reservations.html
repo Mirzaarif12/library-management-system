@@ -1,0 +1,174 @@
+<section class="my-reservations-page" aria-labelledby="my-reservations-title">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">MY LIBRARY</p>
+      <h2 id="my-reservations-title">My reservations</h2>
+      <p class="subtitle">Track your book requests and pickup deadlines.</p>
+    </div>
+    <div class="reservation-summary" aria-label="Reservation summary">
+      <div class="summary-item">
+        <span class="summary-icon waiting-icon" aria-hidden="true">◷</span>
+        <span><small>Waiting</small><strong>{{ waitingCount() }}</strong></span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-icon ready-icon" aria-hidden="true">✓</span>
+        <span><small>Ready for pickup</small><strong>{{ readyCount() }}</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <div class="reservation-panel">
+    <div class="panel-toolbar">
+      <div class="reservation-tabs" role="group" aria-label="Choose reservation view">
+        <button type="button" [attr.aria-pressed]="!showHistory()" (click)="setView(false)">
+          Current <span>{{ activeReservations().length }}</span>
+        </button>
+        <button type="button" [attr.aria-pressed]="showHistory()" (click)="setView(true)">
+          History <span>{{ reservationHistory().length }}</span>
+        </button>
+      </div>
+      <div class="panel-filters">
+        <label class="search-control">
+          <span class="visually-hidden">Search reservations by book title, author, or reservation ID</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></svg>
+          <input type="search" placeholder="Search my reservations..." [value]="search()" (input)="setSearch($event)" />
+        </label>
+        @if (showHistory()) {
+          <label class="history-filter">
+            <span class="visually-hidden">Filter reservation history by status</span>
+            <select [value]="historyStatus()" (change)="setHistoryStatus($event)">
+              <option value="all">All statuses</option>
+              <option value="collected">Collected</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="expired">Expired</option>
+            </select>
+          </label>
+        }
+      </div>
+    </div>
+
+    @if (cancelError()) {
+      <p class="feedback-message error-message" role="alert">{{ cancelError() }}</p>
+    }
+    @if (cancelSuccess()) {
+      <p class="feedback-message success-message" role="status">{{ cancelSuccess() }}</p>
+    }
+
+    <div class="reservation-list">
+      @for (reservation of visibleReservations(); track reservation.id) {
+        <article class="reservation-card" [class.ready-card]="reservation.status === 'ready'" [class.history-card]="showHistory()" [attr.aria-labelledby]="'reservation-' + reservation.id">
+          <div class="book-cover">
+            @if (bookCover(reservation.bookId); as coverUrl) {
+              <img [ngSrc]="coverUrl" width="92" height="132" alt="" />
+            } @else {
+              <span class="cover-placeholder" aria-hidden="true">▤</span>
+            }
+          </div>
+
+          <div class="reservation-main">
+            <p class="reservation-id">RESERVATION {{ reservation.id }}</p>
+            <h3 [id]="'reservation-' + reservation.id">{{ bookTitle(reservation.bookId) }}</h3>
+            <p class="book-author">by {{ bookAuthor(reservation.bookId) }}</p>
+            <span class="category-badge">{{ bookCategory(reservation.bookId) }}</span>
+            <dl class="reservation-details">
+              <div>
+                <dt>Requested</dt>
+                <dd>
+                  <time [attr.datetime]="reservation.requestedAt">
+                    {{ reservation.requestedAt | date:'d MMM yyyy':'+0800' }}
+                    <small>{{ reservation.requestedAt | date:'h:mm a':'+0800' }}</small>
+                  </time>
+                </dd>
+              </div>
+              @if (reservation.status === 'waiting') {
+                <div>
+                  <dt>Queue position</dt>
+                  <dd><span class="queue-number">{{ queuePosition(reservation.id, reservation.bookId) }}</span> in line</dd>
+                </div>
+              } @else if (reservation.pickupDeadline; as deadline) {
+                <div>
+                  <dt>Pickup deadline</dt>
+                  <dd>
+                    <time [attr.datetime]="deadline">
+                      {{ deadline | date:'d MMM yyyy':'+0800' }}
+                      <small>{{ deadline | date:'h:mm a':'+0800' }}</small>
+                    </time>
+                  </dd>
+                </div>
+              }
+              @if (reservation.status === 'collected' && reservation.collectedAt) {
+                <div>
+                  <dt>Collected</dt>
+                  <dd><time [attr.datetime]="reservation.collectedAt">{{ reservation.collectedAt | date:'d MMM yyyy':'+0800' }}</time></dd>
+                </div>
+              }
+            </dl>
+          </div>
+
+          <div class="reservation-side">
+            <div class="status-block">
+              <span class="status-badge" [class.status-ready]="reservation.status === 'ready'" [class.status-waiting]="reservation.status === 'waiting'" [class.status-collected]="reservation.status === 'collected'" [class.status-cancelled]="reservation.status === 'cancelled'" [class.status-expired]="reservation.status === 'expired'">
+                @switch (reservation.status) {
+                  @case ('ready') { <span aria-hidden="true">✓</span> Ready for pickup }
+                  @case ('waiting') { <span aria-hidden="true">◷</span> Waiting }
+                  @case ('collected') { <span aria-hidden="true">✓</span> Collected }
+                  @case ('cancelled') { <span aria-hidden="true">×</span> Cancelled }
+                  @case ('expired') { <span aria-hidden="true">◷</span> Expired }
+                }
+              </span>
+              @switch (reservation.status) {
+                @case ('waiting') { <p>Your request is in line for the next available copy.</p> }
+                @case ('ready') { <p>Your book is ready at the library.</p> }
+                @case ('collected') { <p>You collected this reservation.</p> }
+                @case ('cancelled') { <p>You cancelled this reservation.</p> }
+                @case ('expired') { <p>The pickup window has ended.</p> }
+              }
+            </div>
+
+            @if (reservation.status === 'ready') {
+              @if (reservation.pickupDeadline; as deadline) {
+                <div class="pickup-countdown">
+                  <small>Time left to collect</small>
+                  <strong>{{ timeRemaining(deadline) }}</strong>
+                </div>
+              }
+            }
+
+            @if (reservation.status === 'waiting' || reservation.status === 'ready') {
+              <button class="cancel-button" type="button" [attr.aria-label]="'Cancel reservation for ' + bookTitle(reservation.bookId)" (click)="cancelReservation(reservation.id)">
+                Cancel reservation
+              </button>
+            }
+          </div>
+        </article>
+      } @empty {
+        <div class="empty-state">
+          <span aria-hidden="true">▤</span>
+          @if (search() || (showHistory() && historyStatus() !== 'all')) {
+            <h3>No reservations found</h3>
+            <p>Try another search or status.</p>
+          } @else if (showHistory()) {
+            <h3>No reservation history yet</h3>
+            <p>Your past reservations will appear here.</p>
+          } @else {
+            <h3>No current reservations</h3>
+            <p>Reserve a book from the collection to see it here.</p>
+          }
+        </div>
+      }
+    </div>
+
+    @if (filteredReservations().length > 0) {
+      <footer class="page-footer">
+        <p>Showing {{ rangeStart() }} to {{ rangeEnd() }} of {{ filteredReservations().length }} reservations</p>
+        <nav class="pagination" aria-label="My reservation pages">
+          <button type="button" aria-label="Previous page" [disabled]="currentPage() === 1" (click)="changePage(-1)">‹</button>
+          @for (pageNumber of pageNumbers(); track pageNumber) {
+            <button type="button" [class.active]="pageNumber === currentPage()" [attr.aria-label]="'Page ' + pageNumber" [attr.aria-current]="pageNumber === currentPage() ? 'page' : null" (click)="goToPage(pageNumber)">{{ pageNumber }}</button>
+          }
+          <button type="button" aria-label="Next page" [disabled]="currentPage() === pageCount()" (click)="changePage(1)">›</button>
+        </nav>
+      </footer>
+    }
+  </div>
+</section>

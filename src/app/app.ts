@@ -1,12 +1,16 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component } from '@angular/core';
+import {RouterOutlet} from '@angular/router';
+import { Sidebar } from './shared/sidebar/sidebar';
+import { Navbar } from './shared/navbar/navbar';
 
 @Component({
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, Sidebar, Navbar],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
 })
+
 export class App {
-  protected readonly title = signal('library-management-system');
+  
 }
+

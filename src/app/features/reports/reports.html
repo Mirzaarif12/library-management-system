@@ -1,0 +1,575 @@
+<main class="reports-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">INSIGHTS</p>
+      <h2>Library reports</h2>
+      <p class="subtitle">Review collection, membership, loans, and overdue items.</p>
+    </div>
+  </header>
+
+  <form class="report-filters" (submit)="$event.preventDefault(); generateReport()">
+    <div class="date-field">
+      <label for="report-start-date">Start date</label>
+      <input
+        id="report-start-date"
+        type="date"
+        [value]="startDate()"
+        (input)="startDate.set(readInput($event))"
+      />
+    </div>
+    <span class="date-range-separator" aria-hidden="true">to</span>
+    <div class="date-field">
+      <label for="report-end-date">End date</label>
+      <input
+        id="report-end-date"
+        type="date"
+        [value]="endDate()"
+        (input)="endDate.set(readInput($event))"
+      />
+    </div>
+    <button class="primary-button generate-button" type="submit">Generate report</button>
+    @if (formError()) {
+      <p class="form-error" role="alert">{{ formError() }}</p>
+    }
+  </form>
+
+  <nav class="report-navigation" aria-label="Jump to a report section">
+    <a
+      href="reports#period-statistics-heading"
+      [class.active]="activeSection() === 'period-statistics-heading'"
+      [attr.aria-current]="activeSection() === 'period-statistics-heading' ? 'location' : null"
+    >
+      Period statistics
+    </a>
+    <a
+      href="reports#borrowing-trend-heading"
+      [class.active]="activeSection() === 'borrowing-trend-heading'"
+      [attr.aria-current]="activeSection() === 'borrowing-trend-heading' ? 'location' : null"
+    >
+      Borrowing trend
+    </a>
+    <a
+      href="reports#category-breakdown-heading"
+      [class.active]="activeSection() === 'category-breakdown-heading'"
+      [attr.aria-current]="activeSection() === 'category-breakdown-heading' ? 'location' : null"
+    >
+      By category
+    </a>
+    <a
+      href="reports#period-popular-books-heading"
+      [class.active]="activeSection() === 'period-popular-books-heading'"
+      [attr.aria-current]="activeSection() === 'period-popular-books-heading' ? 'location' : null"
+    >
+      Top books
+    </a>
+    <a
+      href="reports#borrowing-activity-heading"
+      [class.active]="activeSection() === 'borrowing-activity-heading'"
+      [attr.aria-current]="activeSection() === 'borrowing-activity-heading' ? 'location' : null"
+    >
+      Borrowing activity
+    </a>
+     <a
+      href="reports#reservation-history-heading"
+      [class.active]="activeSection() === 'reservation-history-heading'"
+      [attr.aria-current]="activeSection() === 'reservation-history-heading' ? 'location' : null"
+    >
+      Reservation history
+    </a>
+    <a
+      href="reports#overdue-heading"
+      [class.active]="activeSection() === 'overdue-heading'"
+      [attr.aria-current]="activeSection() === 'overdue-heading' ? 'location' : null"
+    >
+      Overdue loans
+    </a>
+    <a
+      href="reports#popular-books-heading"
+      [class.active]="activeSection() === 'popular-books-heading'"
+      [attr.aria-current]="activeSection() === 'popular-books-heading' ? 'location' : null"
+    >
+      Most borrowed books
+    </a>
+    <a
+      href="reports#circulation-history-heading"
+      [class.active]="activeSection() === 'circulation-history-heading'"
+      [attr.aria-current]="activeSection() === 'circulation-history-heading' ? 'location' : null"
+    >
+      Borrowing history
+    </a>
+    <a
+      href="reports#inventory-adjustments-heading"
+      [class.active]="activeSection() === 'inventory-adjustments-heading'"
+      [attr.aria-current]="
+        activeSection() === 'inventory-adjustments-heading' ? 'location' : null
+      "
+    >
+      Inventory adjustments
+    </a>
+    <a
+      href="reports#member-charges-heading"
+      [class.active]="activeSection() === 'member-charges-heading'"
+      [attr.aria-current]="activeSection() === 'member-charges-heading' ? 'location' : null"
+    >
+      Member charges
+    </a>
+   
+  </nav>
+
+  <section class="analytics-panel" aria-labelledby="period-statistics-heading">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">SELECTED PERIOD</p>
+        <h3 id="period-statistics-heading">Key statistics</h3>
+      </div>
+      <p class="period-label">{{ appliedStartDate() }} – {{ appliedEndDate() }}</p>
+    </div>
+    <dl class="stat-grid">
+      <div class="stat-card">
+        <dt>Borrowings</dt>
+        <dd>{{ periodStats().borrowings.value }}</dd>
+        <span class="comparison" [class]="periodStats().borrowings.comparison.direction">
+          {{ comparisonText(periodStats().borrowings.comparison) }}
+        </span>
+      </div>
+      <div class="stat-card">
+        <dt>Members borrowing</dt>
+        <dd>{{ periodStats().members.value }}</dd>
+        <span class="comparison" [class]="periodStats().members.comparison.direction">
+          {{ comparisonText(periodStats().members.comparison) }}
+        </span>
+      </div>
+      <div class="stat-card">
+        <dt>Overdue loans</dt>
+        <dd>{{ periodStats().overdue.value }}</dd>
+        <span class="comparison" [class]="periodStats().overdue.comparison.direction">
+          {{ comparisonText(periodStats().overdue.comparison) }}
+        </span>
+      </div>
+      <div class="stat-card">
+        <dt>Reservations</dt>
+        <dd>{{ periodStats().reservations.value }}</dd>
+        <span class="comparison" [class]="periodStats().reservations.comparison.direction">
+          {{ comparisonText(periodStats().reservations.comparison) }}
+        </span>
+      </div>
+    </dl>
+  </section>
+
+  <div class="analysis-grid">
+    <section class="analytics-panel trend-panel" aria-labelledby="borrowing-trend-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">CIRCULATION</p>
+          <h3 id="borrowing-trend-heading">Borrowing trend</h3>
+        </div>
+        <div class="interval-picker" role="group" aria-label="Borrowing trend interval">
+          <button type="button" [class.selected]="trendInterval() === 'daily'" [attr.aria-pressed]="trendInterval() === 'daily'" (click)="setTrendInterval('daily')">Daily</button>
+          <button type="button" [class.selected]="trendInterval() === 'weekly'" [attr.aria-pressed]="trendInterval() === 'weekly'" (click)="setTrendInterval('weekly')">Weekly</button>
+          <button type="button" [class.selected]="trendInterval() === 'monthly'" [attr.aria-pressed]="trendInterval() === 'monthly'" (click)="setTrendInterval('monthly')">Monthly</button>
+          <button type="button" [class.selected]="trendInterval() === 'yearly'" [attr.aria-pressed]="trendInterval() === 'yearly'" (click)="setTrendInterval('yearly')">Yearly</button>
+        </div>
+      </div>
+      @if (trendPoints().length > 0) {
+        <div class="trend-chart" role="list" aria-label="Borrowings grouped by the selected interval">
+          @for (point of trendPoints(); track point.label) {
+            <div class="trend-column" role="listitem" [attr.aria-label]="point.label + ': ' + point.count + ' borrowings'">
+              <span class="trend-count">{{ point.count }}</span>
+              <div class="trend-track" aria-hidden="true">
+                <span class="trend-bar" [style.height.%]="(point.count / trendMaximum()) * 100"></span>
+              </div>
+              <span class="trend-label">{{ point.label }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="empty-state">No borrowing activity in this period.</p>
+      }
+    </section>
+
+    <section class="analytics-panel category-panel" aria-labelledby="category-breakdown-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">COLLECTION INSIGHT</p>
+          <h3 id="category-breakdown-heading">Borrowings by category</h3>
+        </div>
+      </div>
+      @if (categoryCounts().length > 0) {
+        <ul class="category-list">
+          @for (item of categoryCounts(); track item.category) {
+            <li>
+              <div class="category-label"><span>{{ item.category }}</span><strong>{{ item.count }}</strong></div>
+              <progress [value]="item.percent" max="100" [attr.aria-label]="item.category + ': ' + item.count + ' borrowings'"></progress>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="empty-state">No category activity in this period.</p>
+      }
+    </section>
+  </div>
+
+  <section class="analytics-panel ranking-panel" aria-labelledby="period-popular-books-heading">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">PERIOD RANKING</p>
+        <h3 id="period-popular-books-heading">Most borrowed books</h3>
+      </div>
+      <span class="subtle-label">Top 5 for the selected period</span>
+    </div>
+    @if (periodPopularBooks().length > 0) {
+      <ol class="ranking-list">
+        @for (item of periodPopularBooks(); track item.book.id; let rank = $index) {
+          <li>
+            <span class="rank-number">{{ (rank + 1).toString().padStart(2, '0') }}</span>
+            <div class="rank-details">
+              <div class="rank-title"><strong>{{ item.book.title }}</strong><span>{{ item.borrowCount }} borrowings</span></div>
+              <progress [value]="item.percent" max="100" [attr.aria-label]="item.book.title + ': ' + item.borrowCount + ' borrowings'"></progress>
+            </div>
+          </li>
+        }
+      </ol>
+    } @else {
+      <p class="empty-state">No books were borrowed in this period.</p>
+    }
+  </section>
+
+  <section class="analytics-panel activity-panel" aria-labelledby="borrowing-activity-heading">
+    <div class="section-heading activity-heading">
+      <div>
+        <p class="eyebrow">DETAILED RECORDS</p>
+        <h3 id="borrowing-activity-heading">Borrowing activity</h3>
+        <p class="panel-description">Checkouts recorded during {{ appliedStartDate() }} – {{ appliedEndDate() }}.</p>
+      </div>
+      <button class="secondary-button" type="button" (click)="exportActivityCsv()">Export CSV</button>
+    </div>
+    <label class="search-field" for="activity-search">
+      <span>Search activity</span>
+      <input id="activity-search" type="search" placeholder="Search member, book, category, or loan ID" [value]="activitySearch()" (input)="setActivitySearch($event)" />
+    </label>
+    <div class="table-wrap">
+      <table class="reports-table activity-table">
+        <caption>Borrowing records matching this period and search</caption>
+        <thead>
+          <tr>
+            <th scope="col">No.</th>
+            <th scope="col">Member</th>
+            <th scope="col">Book</th>
+            <th scope="col">Category</th>
+            <th scope="col">Borrow date</th>
+            <th scope="col">Due date</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of pagedActivityRows(); track row.loan.id; let index = $index) {
+            <tr>
+              <td>{{ (activityPage() - 1) * 10 + index + 1 }}</td>
+              <td>{{ row.member }}</td>
+              <td>{{ row.book }}</td>
+              <td>{{ row.category }}</td>
+              <td>{{ row.loan.borrowedAt }}</td>
+              <td>{{ row.loan.dueAt }}</td>
+              <td><span class="status-pill" [class]="row.status.toLowerCase().replace(' ', '-')">{{ row.status }}</span></td>
+            </tr>
+          } @empty {
+            <tr><td colspan="7">No borrowing activity matches this period and search.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="table-footer">
+      <p>Showing {{ activityRows().length === 0 ? 0 : (activityPage() - 1) * 10 + 1 }}–{{ (activityPage() - 1) * 10 + pagedActivityRows().length }} of {{ activityRows().length }} records</p>
+      <nav class="pagination" aria-label="Borrowing activity pages">
+        <button type="button" [disabled]="activityPage() <= 1" (click)="setActivityPage(activityPage() - 1)" aria-label="Previous page">‹</button>
+        @for (page of activityPageNumbers(); track page) {
+          <button type="button" [class.current]="activityPage() === page" [attr.aria-current]="activityPage() === page ? 'page' : null" (click)="setActivityPage(page)" [attr.aria-label]="'Page ' + page">{{ page }}</button>
+        }
+        <button type="button" [disabled]="activityPage() >= activityPageCount()" (click)="setActivityPage(activityPage() + 1)" aria-label="Next page">›</button>
+      </nav>
+    </div>
+  </section>
+  
+  <section class="overdue-panel" aria-labelledby="reservation-history-heading">
+    <h3 id="reservation-history-heading">Reservation history</h3>
+    
+    <button
+      class="secondary-button"
+      type="button"
+      (click)="exportReservationHistoryCsv()"
+    >
+      Export reservations CSV
+    </button>
+
+    <div class="table-wrap">
+      <table class="reports-table reservation-history-table">
+        <caption>All reservations, including expired and cancelled requests</caption>
+        <thead>
+          <tr>
+            <th scope="col">Reservation ID</th>
+            <th scope="col">Member</th>
+            <th scope="col">Book</th>
+            <th scope="col">Requested</th>
+            <th scope="col">Ready</th>
+            <th scope="col">Pickup deadline</th>
+            <th scope="col">Collected</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (reservation of reservationHistory(); track reservation.id) {
+            <tr>
+              <td>{{ reservation.id }}</td>
+              <td>{{ memberName(reservation.memberId) }}</td>
+              <td>{{ bookTitle(reservation.bookId) }}</td>
+              <td>{{ reservation.requestedAt }}</td>
+              <td>{{ reservation.readyAt ?? '—' }}</td>
+              <td>{{ reservation.pickupDeadline ?? '—' }}</td>
+              <td>{{ reservation.collectedAt ?? '—' }}</td>
+              <td>{{ reservation.status }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8">There is no reservation history yet.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="overdue-panel" aria-labelledby="overdue-heading">
+    <h3 id="overdue-heading">Overdue loans</h3>
+
+    <div class="table-wrap">
+      <table class="reports-table">
+        <caption>Books past their due date and not yet returned</caption>
+        <thead>
+          <tr>
+            <th scope="col">Member</th>
+            <th scope="col">Book</th>
+            <th scope="col">Due date</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (loan of overdueLoans(); track loan.id) {
+            <tr>
+              <td>{{ memberName(loan.memberId) }}</td>
+              <td>{{ bookTitle(loan.bookId) }}</td>
+              <td>
+                <time [attr.datetime]="loan.dueAt">{{ loan.dueAt }}</time>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3">There are no overdue loans.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="overdue-panel" aria-labelledby="popular-books-heading">
+    <h3 id="popular-books-heading">Most borrowed books</h3>
+
+    <div class="table-wrap">
+      <table class="reports-table">
+        <caption>Books ranked by total number of borrowing records</caption>
+        <thead>
+          <tr>
+            <th scope="col">Rank</th>
+            <th scope="col">Book</th>
+            <th scope="col">Author</th>
+            <th scope="col">Category</th>
+            <th scope="col">Times borrowed</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (
+            item of mostBorrowedBooks();
+            track item.book.id;
+            let rank = $index
+          ) {
+            <tr>
+              <td>{{ rank + 1 }}</td>
+              <td>{{ item.book.title }}</td>
+              <td>{{ item.book.author }}</td>
+              <td>{{ item.book.category }}</td>
+              <td>{{ item.borrowCount }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5">No borrowing history is available yet.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="overdue-panel" aria-labelledby="circulation-history-heading">
+    <h3 id="circulation-history-heading">Borrowing and return history</h3>
+
+    <div class="table-wrap">
+      <table class="reports-table">
+        <caption>All book checkouts, including active and returned loans</caption>
+        <thead>
+          <tr>
+            <th scope="col">Loan ID</th>
+            <th scope="col">Member</th>
+            <th scope="col">Book</th>
+            <th scope="col">Borrowed</th>
+            <th scope="col">Due</th>
+            <th scope="col">Returned</th>
+            <th scope="col">Status</th>
+            <th scope="col">Fine</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (loan of borrowingHistory(); track loan.id) {
+            <tr>
+              <td>{{ loan.id }}</td>
+              <td>{{ memberName(loan.memberId) }}</td>
+              <td>{{ bookTitle(loan.bookId) }}</td>
+              <td>{{ loan.borrowedAt }}</td>
+              <td>{{ loan.dueAt }}</td>
+              <td>{{ loan.returnedAt ?? loan.lostAt ?? '—' }}</td>
+              <td>
+                @if (loan.lostAt != null) {
+                  Lost
+                } @else if (loan.returnedAt && loan.returnCondition === 'damaged') {
+                  Returned damaged
+                } @else if (loan.returnedAt) {
+                  Returned
+                } @else if (loan.dueAt < today) {
+                  Overdue
+                } @else {
+                  On loan
+                }
+              </td>
+              <td>RM {{ fineAmount(loan).toFixed(2) }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8">There is no borrowing history yet.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="overdue-panel" aria-labelledby="inventory-adjustments-heading">
+    <h3 id="inventory-adjustments-heading">Inventory adjustment history</h3>
+
+    <button
+      class="secondary-button"
+      type="button"
+      (click)="exportInventoryAdjustmentsCsv()"
+    >
+      Export inventory CSV
+    </button>
+
+    <div class="table-wrap">
+      <table class="reports-table">
+        <caption>Recorded additions and removals of book copies</caption>
+        <thead>
+          <tr>
+            <th scope="col">Adjustment ID</th>
+            <th scope="col">Date</th>
+            <th scope="col">Book</th>
+            <th scope="col">Reason</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Total change</th>
+            <th scope="col">Available change</th>
+            <th scope="col">Staff</th>
+            <th scope="col">Loan ID</th>
+            <th scope="col">Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (adjustment of inventoryAdjustmentHistory(); track adjustment.id) {
+            <tr>
+              <td>{{ adjustment.id }}</td>
+              <td>
+                <time [attr.datetime]="adjustment.adjustedAt">
+                  {{ adjustment.adjustedAt }}
+                </time>
+              </td>
+              <td>{{ bookTitle(adjustment.bookId) }}</td>
+              <td>{{ adjustmentReasonLabel(adjustment.reason) }}</td>
+              <td>{{ adjustment.quantity }}</td>
+              <td>{{ adjustment.totalCopiesChange }}</td>
+              <td>{{ adjustment.availableCopiesChange }}</td>
+              <td>{{ adjustment.adjustedBy }}</td>
+              <td>{{ adjustment.borrowingId ?? '—' }}</td>
+              <td>{{ adjustment.note }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="10">There are no inventory adjustments yet.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="overdue-panel" aria-labelledby="member-charges-heading">
+    <h3 id="member-charges-heading">Member charge history</h3>
+
+    <button
+      class="secondary-button"
+      type="button"
+      (click)="exportMemberChargesCsv()"
+    >
+      Export charges CSV
+    </button>
+
+    <p>
+      Outstanding unpaid charges:
+      <strong>RM {{ outstandingReplacementChargeTotal().toFixed(2) }}</strong>
+    </p>
+
+    <div class="table-wrap">
+      <table class="reports-table">
+        <caption>Lost-book replacement charges and late-return fines</caption>
+        <thead>
+          <tr>
+            <th scope="col">Charge ID</th>
+            <th scope="col">Member</th>
+            <th scope="col">Book</th>
+            <th scope="col">Reason</th>
+            <th scope="col">Issued</th>
+            <th scope="col">Payment deadline</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (charge of replacementChargeHistory(); track charge.id) {
+            <tr>
+              <td>{{ charge.id }}</td>
+              <td>{{ memberName(charge.memberId) }}</td>
+              <td>{{ bookTitle(charge.bookId) }}</td>
+              <td>
+                {{
+                  charge.reason === 'late-return'
+                    ? 'Late return fine'
+                    : 'Lost-book replacement'
+                }}
+              </td>
+              <td>{{ charge.issuedAt }}</td>
+              <td>{{ charge.paymentDueAt }}</td>
+              <td>RM {{ charge.amount.toFixed(2) }}</td>
+              <td>{{ replacementChargeStatus(charge) }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8">There are no member charges.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
