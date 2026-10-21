@@ -47,3 +47,7 @@ Thumbs.db
 /api/node_modules/
 /api/dist/
 /api/data/
+
+# Standalone .NET backend build output
+/backend/**/bin/
+/backend/**/obj/

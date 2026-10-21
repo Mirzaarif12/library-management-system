@@ -1,0 +1,7 @@
+﻿namespace LibraryManagement.Application.Books;
+
+public interface IBookService
+{
+    Task<IReadOnlyList<BookDto>> GetBooksAsync(
+        CancellationToken cancellationToken = default);
+}

@@ -1,0 +1,28 @@
+﻿using LibraryManagement.Application.Books;
+using LibraryManagement.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace LibraryManagement.Infrastructure.Books;
+
+public sealed class BookService(LibraryDbContext dbContext) : IBookService
+{
+    public async Task<IReadOnlyList<BookDto>> GetBooksAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Books
+            .AsNoTracking()
+            .OrderBy(book => book.Title)
+            .Select(book => new BookDto(
+                book.Id,
+                book.Isbn,
+                book.Title,
+                book.Author,
+                book.Category,
+                book.Publisher,
+                book.PublicationYear,
+                book.ReplacementCost,
+                book.TotalCopies,
+                book.AvailableCopies))
+            .ToListAsync(cancellationToken);
+    }
+}

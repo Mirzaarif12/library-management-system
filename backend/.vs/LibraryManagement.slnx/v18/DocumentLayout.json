@@ -1,0 +1,236 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\intern.ktmb01\\.copilot\\plans\\plan-add-pagination-and-search-to-books-listing.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|MarkdownSecurePreview"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\intern.ktmb01\\.copilot\\plans\\plan-add-books-api-integration-tests.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|MarkdownSecurePreview"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CD2E0EC-E0CF-67CA-A295-A73437BB9689}|LibraryManagement.Application\\LibraryManagement.Application.csproj|c:\\users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\librarymanagement.application\\books\\booklistquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CD2E0EC-E0CF-67CA-A295-A73437BB9689}|LibraryManagement.Application\\LibraryManagement.Application.csproj|solutionrelative:librarymanagement.application\\books\\booklistquery.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CD2E0EC-E0CF-67CA-A295-A73437BB9689}|LibraryManagement.Application\\LibraryManagement.Application.csproj|c:\\users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\librarymanagement.application\\books\\pagedresult.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CD2E0EC-E0CF-67CA-A295-A73437BB9689}|LibraryManagement.Application\\LibraryManagement.Application.csproj|solutionrelative:librarymanagement.application\\books\\pagedresult.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4CD2E0EC-E0CF-67CA-A295-A73437BB9689}|LibraryManagement.Application\\LibraryManagement.Application.csproj|c:\\users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\librarymanagement.application\\books\\ibookservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4CD2E0EC-E0CF-67CA-A295-A73437BB9689}|LibraryManagement.Application\\LibraryManagement.Application.csproj|solutionrelative:librarymanagement.application\\books\\ibookservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{02B4CC3D-E2BA-283D-B2C6-93E577AAFE4F}|LibraryManagement.Infrastructure\\LibraryManagement.Infrastructure.csproj|c:\\users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\librarymanagement.infrastructure\\books\\bookservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{02B4CC3D-E2BA-283D-B2C6-93E577AAFE4F}|LibraryManagement.Infrastructure\\LibraryManagement.Infrastructure.csproj|solutionrelative:librarymanagement.infrastructure\\books\\bookservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{76BA27D7-E93B-3A87-7DE3-85135270BD61}|LibraryManagement.Api\\LibraryManagement.Api.csproj|c:\\users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\librarymanagement.api\\controllers\\bookscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{76BA27D7-E93B-3A87-7DE3-85135270BD61}|LibraryManagement.Api\\LibraryManagement.Api.csproj|solutionrelative:librarymanagement.api\\controllers\\bookscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{50261E19-253D-121E-9210-E27DCB9AA63D}|LibraryManagement.Api.Tests\\LibraryManagement.Api.Tests.csproj|c:\\users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\librarymanagement.api.tests\\booksapitests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{50261E19-253D-121E-9210-E27DCB9AA63D}|LibraryManagement.Api.Tests\\LibraryManagement.Api.Tests.csproj|solutionrelative:librarymanagement.api.tests\\booksapitests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{76BA27D7-E93B-3A87-7DE3-85135270BD61}|LibraryManagement.Api\\LibraryManagement.Api.csproj|c:\\users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\librarymanagement.api\\librarymanagement.api.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
+      "RelativeMoniker": "D:0:0:{76BA27D7-E93B-3A87-7DE3-85135270BD61}|LibraryManagement.Api\\LibraryManagement.Api.csproj|solutionrelative:librarymanagement.api\\librarymanagement.api.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{50261E19-253D-121E-9210-E27DCB9AA63D}|LibraryManagement.Api.Tests\\LibraryManagement.Api.Tests.csproj|c:\\users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\librarymanagement.api.tests\\librarymanagement.api.tests.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{50261E19-253D-121E-9210-E27DCB9AA63D}|LibraryManagement.Api.Tests\\LibraryManagement.Api.Tests.csproj|solutionrelative:librarymanagement.api.tests\\librarymanagement.api.tests.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\LibraryManagement.slnx||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{76BA27D7-E93B-3A87-7DE3-85135270BD61}|LibraryManagement.Api\\LibraryManagement.Api.csproj|c:\\users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\librarymanagement.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{76BA27D7-E93B-3A87-7DE3-85135270BD61}|LibraryManagement.Api\\LibraryManagement.Api.csproj|solutionrelative:librarymanagement.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{50261E19-253D-121E-9210-E27DCB9AA63D}|LibraryManagement.Api.Tests\\LibraryManagement.Api.Tests.csproj|c:\\users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\librarymanagement.api.tests\\libraryapifactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{50261E19-253D-121E-9210-E27DCB9AA63D}|LibraryManagement.Api.Tests\\LibraryManagement.Api.Tests.csproj|solutionrelative:librarymanagement.api.tests\\libraryapifactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 9,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "LibraryApiFactory.cs",
+              "DocumentMoniker": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Api.Tests\\LibraryApiFactory.cs",
+              "RelativeDocumentMoniker": "LibraryManagement.Api.Tests\\LibraryApiFactory.cs",
+              "ToolTip": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Api.Tests\\LibraryApiFactory.cs",
+              "RelativeToolTip": "LibraryManagement.Api.Tests\\LibraryApiFactory.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-21T09:18:23.577Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Api\\Program.cs",
+              "RelativeDocumentMoniker": "LibraryManagement.Api\\Program.cs",
+              "ToolTip": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Api\\Program.cs",
+              "RelativeToolTip": "LibraryManagement.Api\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-21T09:18:23.533Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "LibraryManagement.slnx",
+              "DocumentMoniker": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\LibraryManagement.slnx",
+              "RelativeDocumentMoniker": "..\\LibraryManagement.slnx",
+              "ToolTip": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\LibraryManagement.slnx",
+              "RelativeToolTip": "..\\LibraryManagement.slnx",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002855|",
+              "WhenOpened": "2026-10-21T09:18:23.501Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "LibraryManagement.Api.Tests",
+              "DocumentMoniker": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Api.Tests\\LibraryManagement.Api.Tests.csproj",
+              "RelativeDocumentMoniker": "LibraryManagement.Api.Tests\\LibraryManagement.Api.Tests.csproj",
+              "ToolTip": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Api.Tests\\LibraryManagement.Api.Tests.csproj",
+              "RelativeToolTip": "LibraryManagement.Api.Tests\\LibraryManagement.Api.Tests.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-10-21T09:18:23.438Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "BooksController.cs",
+              "DocumentMoniker": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Api\\Controllers\\BooksController.cs",
+              "RelativeDocumentMoniker": "LibraryManagement.Api\\Controllers\\BooksController.cs",
+              "ToolTip": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Api\\Controllers\\BooksController.cs",
+              "RelativeToolTip": "LibraryManagement.Api\\Controllers\\BooksController.cs",
+              "ViewState": "AgIAAAoAAAAAAAAAAABQwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-21T07:47:47.657Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "BookService.cs",
+              "DocumentMoniker": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Infrastructure\\Books\\BookService.cs",
+              "RelativeDocumentMoniker": "LibraryManagement.Infrastructure\\Books\\BookService.cs",
+              "ToolTip": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Infrastructure\\Books\\BookService.cs",
+              "RelativeToolTip": "LibraryManagement.Infrastructure\\Books\\BookService.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAABQwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-21T07:47:18.406Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "IBookService.cs",
+              "DocumentMoniker": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Application\\Books\\IBookService.cs",
+              "RelativeDocumentMoniker": "LibraryManagement.Application\\Books\\IBookService.cs",
+              "ToolTip": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Application\\Books\\IBookService.cs",
+              "RelativeToolTip": "LibraryManagement.Application\\Books\\IBookService.cs",
+              "ViewState": "AgIAAAQAAAAAAAAAAABQwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-21T07:47:18.244Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "PagedResult.cs",
+              "DocumentMoniker": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Application\\Books\\PagedResult.cs",
+              "RelativeDocumentMoniker": "LibraryManagement.Application\\Books\\PagedResult.cs",
+              "ToolTip": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Application\\Books\\PagedResult.cs",
+              "RelativeToolTip": "LibraryManagement.Application\\Books\\PagedResult.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-21T07:46:49.033Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "BookListQuery.cs",
+              "DocumentMoniker": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Application\\Books\\BookListQuery.cs",
+              "RelativeDocumentMoniker": "LibraryManagement.Application\\Books\\BookListQuery.cs",
+              "ToolTip": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Application\\Books\\BookListQuery.cs",
+              "RelativeToolTip": "LibraryManagement.Application\\Books\\BookListQuery.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-21T07:46:48.918Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "plan-add-pagination-and-search-to-books-listing.md [Preview]",
+              "DocumentMoniker": "C:\\Users\\intern.ktmb01\\.copilot\\plans\\plan-add-pagination-and-search-to-books-listing.md",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\.copilot\\plans\\plan-add-pagination-and-search-to-books-listing.md",
+              "ToolTip": "C:\\Users\\intern.ktmb01\\.copilot\\plans\\plan-add-pagination-and-search-to-books-listing.md [Preview]",
+              "RelativeToolTip": "..\\..\\..\\..\\.copilot\\plans\\plan-add-pagination-and-search-to-books-listing.md [Preview]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-10-21T07:40:16.538Z",
+              "EditorCaption": " [Preview]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "BooksApiTests.cs",
+              "DocumentMoniker": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Api.Tests\\BooksApiTests.cs",
+              "RelativeDocumentMoniker": "LibraryManagement.Api.Tests\\BooksApiTests.cs",
+              "ToolTip": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Api.Tests\\BooksApiTests.cs",
+              "RelativeToolTip": "LibraryManagement.Api.Tests\\BooksApiTests.cs",
+              "ViewState": "AgIAABkAAAAAAAAAAABQwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-21T07:48:37.94Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "LibraryManagement.Api.http",
+              "DocumentMoniker": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Api\\LibraryManagement.Api.http",
+              "RelativeDocumentMoniker": "LibraryManagement.Api\\LibraryManagement.Api.http",
+              "ToolTip": "C:\\Users\\intern.ktmb01\\source\\repos\\library-management-system\\backend\\LibraryManagement.Api\\LibraryManagement.Api.http",
+              "RelativeToolTip": "LibraryManagement.Api\\LibraryManagement.Api.http",
+              "ViewState": "AgIAABUAAAAAAAAAAIBQwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
+              "WhenOpened": "2026-10-21T07:49:08.373Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "plan-add-books-api-integration-tests.md [Preview]",
+              "DocumentMoniker": "C:\\Users\\intern.ktmb01\\.copilot\\plans\\plan-add-books-api-integration-tests.md",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\.copilot\\plans\\plan-add-books-api-integration-tests.md",
+              "ToolTip": "C:\\Users\\intern.ktmb01\\.copilot\\plans\\plan-add-books-api-integration-tests.md [Preview]",
+              "RelativeToolTip": "..\\..\\..\\..\\.copilot\\plans\\plan-add-books-api-integration-tests.md [Preview]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-10-21T06:45:11.511Z",
+              "EditorCaption": " [Preview]"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

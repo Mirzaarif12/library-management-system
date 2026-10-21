@@ -1,0 +1,24 @@
+@LibraryManagement.Api_HostAddress = http://localhost:5221
+
+GET {{LibraryManagement.Api_HostAddress}}/api/health
+Accept: application/json
+
+###
+
+GET {{LibraryManagement.Api_HostAddress}}/api/books?page=1&pageSize=20
+Accept: application/json
+
+###
+
+GET {{LibraryManagement.Api_HostAddress}}/api/books?page=2&pageSize=10
+Accept: application/json
+
+###
+
+GET {{LibraryManagement.Api_HostAddress}}/api/books?search=history
+Accept: application/json
+
+###
+
+GET {{LibraryManagement.Api_HostAddress}}/api/books?search=history&page=1&pageSize=10
+Accept: application/json
