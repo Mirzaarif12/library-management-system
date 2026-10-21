@@ -1,0 +1,17 @@
+﻿using LibraryManagement.Application.Books;
+using Microsoft.AspNetCore.Mvc;
+
+namespace LibraryManagement.Api.Controllers;
+
+[ApiController]
+[Route("api/books")]
+public sealed class BooksController(IBookService bookService) : ControllerBase
+{
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<BookDto>>> GetBooks(
+        CancellationToken cancellationToken)
+    {
+        var books = await bookService.GetBooksAsync(cancellationToken);
+        return Ok(books);
+    }
+}

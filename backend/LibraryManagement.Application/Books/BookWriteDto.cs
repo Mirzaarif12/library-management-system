@@ -1,0 +1,48 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace LibraryManagement.Application.Books;
+
+public sealed record BookWriteDto : IValidatableObject
+{
+    [Required]
+    [StringLength(20)]
+    public string Isbn { get; init; } = string.Empty;
+
+    [Required]
+    [StringLength(200)]
+    public string Title { get; init; } = string.Empty;
+
+    [Required]
+    [StringLength(150)]
+    public string Author { get; init; } = string.Empty;
+
+    [Required]
+    [StringLength(100)]
+    public string Category { get; init; } = string.Empty;
+
+    [Required]
+    [StringLength(150)]
+    public string Publisher { get; init; } = string.Empty;
+
+    [Range(1, 9999)]
+    public int PublicationYear { get; init; }
+
+    [Range(typeof(decimal), "0.01", "99999999.99")]
+    public decimal ReplacementCost { get; init; }
+
+    [Range(1, int.MaxValue)]
+    public int TotalCopies { get; init; }
+
+    [Range(0, int.MaxValue)]
+    public int AvailableCopies { get; init; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (AvailableCopies > TotalCopies)
+        {
+            yield return new ValidationResult(
+                "Available copies cannot exceed total copies.",
+                [nameof(AvailableCopies)]);
+        }
+    }
+}
