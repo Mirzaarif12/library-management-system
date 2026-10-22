@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LibraryManagement.Application.Books;
 
-public sealed record BookWriteDto : IValidatableObject
+public record BookWriteDto
 {
     [Required]
     [StringLength(20)]
@@ -30,19 +30,4 @@ public sealed record BookWriteDto : IValidatableObject
     [Range(typeof(decimal), "0.01", "99999999.99")]
     public decimal ReplacementCost { get; init; }
 
-    [Range(1, int.MaxValue)]
-    public int TotalCopies { get; init; }
-
-    [Range(0, int.MaxValue)]
-    public int AvailableCopies { get; init; }
-
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-        if (AvailableCopies > TotalCopies)
-        {
-            yield return new ValidationResult(
-                "Available copies cannot exceed total copies.",
-                [nameof(AvailableCopies)]);
-        }
-    }
 }

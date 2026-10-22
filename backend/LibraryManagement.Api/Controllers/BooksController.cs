@@ -25,9 +25,18 @@ public sealed class BooksController(IBookService bookService) : ControllerBase
         return book is null ? NotFound() : Ok(book);
     }
 
+    [HttpGet("{bookId:int}/copies")]
+    public async Task<ActionResult<IReadOnlyList<BookCopyDto>>> GetBookCopies(
+        int bookId,
+        CancellationToken cancellationToken)
+    {
+        var copies = await bookService.GetBookCopiesAsync(bookId, cancellationToken);
+        return copies is null ? NotFound() : Ok(copies);
+    }
+
     [HttpPost]
     public async Task<ActionResult<BookDto>> CreateBook(
-        BookWriteDto book,
+        BookCreateDto book,
         CancellationToken cancellationToken)
     {
         var result = await bookService.CreateBookAsync(book, cancellationToken);
@@ -38,6 +47,48 @@ public sealed class BooksController(IBookService bookService) : ControllerBase
         }
 
         return CreatedAtAction(nameof(GetBook), new { id = result.Book!.Id }, result.Book);
+    }
+
+    [HttpPost("{bookId:int}/copies")]
+    public async Task<ActionResult<BookCopyDto>> AddBookCopy(
+        int bookId,
+        CancellationToken cancellationToken)
+    {
+        var result = await bookService.AddBookCopyAsync(bookId, cancellationToken);
+
+        if (result.Status == BookCopyOperationStatus.BookNotFound)
+        {
+            return NotFound();
+        }
+
+        return CreatedAtAction(nameof(GetBookCopies), new { bookId }, result.Copy);
+    }
+
+    [HttpPut("{bookId:int}/copies/{barcode}/status")]
+    public async Task<ActionResult<BookCopyDto>> UpdateBookCopyStatus(
+        int bookId,
+        string barcode,
+        BookCopyStatusUpdateDto statusUpdate,
+        CancellationToken cancellationToken)
+    {
+        var result = await bookService.UpdateBookCopyStatusAsync(
+            bookId,
+            barcode,
+            statusUpdate.Status!.Value,
+            cancellationToken);
+
+        if (result.Status == BookCopyOperationStatus.BookNotFound
+            || result.Status == BookCopyOperationStatus.CopyNotFound)
+        {
+            return NotFound();
+        }
+
+        if (result.Status == BookCopyOperationStatus.InvalidStatus)
+        {
+            return BadRequest(new { message = "The requested copy status is invalid." });
+        }
+
+        return Ok(result.Copy);
     }
 
     [HttpPut("{id:int}")]
@@ -66,7 +117,18 @@ public sealed class BooksController(IBookService bookService) : ControllerBase
         int id,
         CancellationToken cancellationToken)
     {
-        var deleted = await bookService.DeleteBookAsync(id, cancellationToken);
-        return deleted ? NoContent() : NotFound();
+        var result = await bookService.DeleteBookAsync(id, cancellationToken);
+
+        if (result == BookDeleteStatus.NotFound)
+        {
+            return NotFound();
+        }
+
+        if (result == BookDeleteStatus.CopiesExist)
+        {
+            return Conflict(new { message = "A book with inventory copies cannot be deleted." });
+        }
+
+        return NoContent();
     }
 }

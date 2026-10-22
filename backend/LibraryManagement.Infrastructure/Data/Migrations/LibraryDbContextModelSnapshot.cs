@@ -34,9 +34,6 @@ namespace LibraryManagement.Infrastructure.Data.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
-                    b.Property<int>("AvailableCopies")
-                        .HasColumnType("int");
-
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -64,15 +61,57 @@ namespace LibraryManagement.Infrastructure.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<int>("TotalCopies")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Isbn")
                         .IsUnique();
 
                     b.ToTable("Books");
+                });
+
+            modelBuilder.Entity("LibraryManagement.Domain.Entities.BookCopy", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasMaxLength(35)
+                        .HasColumnType("nvarchar(35)");
+
+                    b.Property<int>("BookId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Barcode")
+                        .IsUnique();
+
+                    b.HasIndex("BookId");
+
+                    b.ToTable("BookCopies");
+                });
+
+            modelBuilder.Entity("LibraryManagement.Domain.Entities.BookCopy", b =>
+                {
+                    b.HasOne("LibraryManagement.Domain.Entities.Book", "Book")
+                        .WithMany("Copies")
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+                });
+
+            modelBuilder.Entity("LibraryManagement.Domain.Entities.Book", b =>
+                {
+                    b.Navigation("Copies");
                 });
 #pragma warning restore 612, 618
         }

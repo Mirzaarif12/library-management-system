@@ -7,6 +7,7 @@ public sealed class LibraryDbContext(DbContextOptions<LibraryDbContext> options)
     : DbContext(options)
 {
     public DbSet<Book> Books => Set<Book>();
+    public DbSet<BookCopy> BookCopies => Set<BookCopy>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -20,6 +21,18 @@ public sealed class LibraryDbContext(DbContextOptions<LibraryDbContext> options)
             entity.Property(book => book.Category).HasMaxLength(100).IsRequired();
             entity.Property(book => book.Publisher).HasMaxLength(150).IsRequired();
             entity.Property(book => book.ReplacementCost).HasPrecision(10, 2);
+            entity.HasMany(book => book.Copies)
+                .WithOne(copy => copy.Book)
+                .HasForeignKey(copy => copy.BookId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<BookCopy>(entity =>
+        {
+            entity.HasKey(copy => copy.Id);
+            entity.Property(copy => copy.Barcode).HasMaxLength(35).IsRequired();
+            entity.HasIndex(copy => copy.Barcode).IsUnique();
+            entity.Property(copy => copy.Status).IsRequired();
         });
     }
 }

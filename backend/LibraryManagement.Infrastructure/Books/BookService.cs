@@ -48,8 +48,8 @@ public sealed class BookService(LibraryDbContext dbContext) : IBookService
                     book.Publisher,
                     book.PublicationYear,
                     book.ReplacementCost,
-                    book.TotalCopies,
-                    book.AvailableCopies))
+                book.Copies.Count,
+                book.Copies.Count(copy => copy.Status == BookCopyStatus.Available)))
                 .ToListAsync(cancellationToken);
         }
 
@@ -72,13 +72,30 @@ public sealed class BookService(LibraryDbContext dbContext) : IBookService
                 book.Publisher,
                 book.PublicationYear,
                 book.ReplacementCost,
-                book.TotalCopies,
-                book.AvailableCopies))
+                book.Copies.Count,
+                book.Copies.Count(copy => copy.Status == BookCopyStatus.Available)))
             .SingleOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<BookCopyDto>?> GetBookCopiesAsync(
+        int bookId,
+        CancellationToken cancellationToken = default)
+    {
+        if (!await dbContext.Books.AnyAsync(book => book.Id == bookId, cancellationToken))
+        {
+            return null;
+        }
+
+        return await dbContext.BookCopies
+            .AsNoTracking()
+            .Where(copy => copy.BookId == bookId)
+            .OrderBy(copy => copy.Barcode)
+            .Select(copy => new BookCopyDto(copy.Id, copy.BookId, copy.Barcode, copy.Status))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<BookWriteResult> CreateBookAsync(
-        BookWriteDto bookDto,
+        BookCreateDto bookDto,
         CancellationToken cancellationToken = default)
     {
         var book = CreateBook(bookDto);
@@ -88,6 +105,15 @@ public sealed class BookService(LibraryDbContext dbContext) : IBookService
                 cancellationToken))
         {
             return new BookWriteResult(BookWriteStatus.IsbnConflict);
+        }
+
+        for (var copyNumber = 0; copyNumber < bookDto.InitialCopies; copyNumber++)
+        {
+            book.Copies.Add(new BookCopy
+            {
+                Barcode = GenerateBarcode(),
+                Status = BookCopyStatus.Available
+            });
         }
 
         dbContext.Books.Add(book);
@@ -153,7 +179,66 @@ public sealed class BookService(LibraryDbContext dbContext) : IBookService
         return new BookWriteResult(BookWriteStatus.Succeeded, ToDto(book));
     }
 
-    public async Task<bool> DeleteBookAsync(
+    public async Task<BookCopyOperationResult> AddBookCopyAsync(
+        int bookId,
+        CancellationToken cancellationToken = default)
+    {
+        if (!await dbContext.Books.AnyAsync(book => book.Id == bookId, cancellationToken))
+        {
+            return new BookCopyOperationResult(BookCopyOperationStatus.BookNotFound);
+        }
+
+        var copy = new BookCopy
+        {
+            BookId = bookId,
+            Barcode = GenerateBarcode(),
+            Status = BookCopyStatus.Available
+        };
+
+        dbContext.BookCopies.Add(copy);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return new BookCopyOperationResult(
+            BookCopyOperationStatus.Succeeded,
+            ToDto(copy));
+    }
+
+    public async Task<BookCopyOperationResult> UpdateBookCopyStatusAsync(
+        int bookId,
+        string barcode,
+        BookCopyStatus status,
+        CancellationToken cancellationToken = default)
+    {
+        if (!Enum.IsDefined(status))
+        {
+            return new BookCopyOperationResult(BookCopyOperationStatus.InvalidStatus);
+        }
+
+        var copy = await dbContext.BookCopies
+            .SingleOrDefaultAsync(
+                existingCopy => existingCopy.BookId == bookId
+                    && existingCopy.Barcode == barcode,
+                cancellationToken);
+
+        if (copy is null)
+        {
+            var bookExists = await dbContext.Books
+                .AnyAsync(book => book.Id == bookId, cancellationToken);
+            return new BookCopyOperationResult(
+                bookExists
+                    ? BookCopyOperationStatus.CopyNotFound
+                    : BookCopyOperationStatus.BookNotFound);
+        }
+
+        copy.Status = status;
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return new BookCopyOperationResult(
+            BookCopyOperationStatus.Succeeded,
+            ToDto(copy));
+    }
+
+    public async Task<BookDeleteStatus> DeleteBookAsync(
         int id,
         CancellationToken cancellationToken = default)
     {
@@ -162,12 +247,17 @@ public sealed class BookService(LibraryDbContext dbContext) : IBookService
 
         if (book is null)
         {
-            return false;
+            return BookDeleteStatus.NotFound;
+        }
+
+        if (await dbContext.BookCopies.AnyAsync(copy => copy.BookId == id, cancellationToken))
+        {
+            return BookDeleteStatus.CopiesExist;
         }
 
         dbContext.Books.Remove(book);
         await dbContext.SaveChangesAsync(cancellationToken);
-        return true;
+        return BookDeleteStatus.Deleted;
     }
 
     private static Book CreateBook(BookWriteDto bookDto)
@@ -186,11 +276,11 @@ public sealed class BookService(LibraryDbContext dbContext) : IBookService
         book.Publisher = Normalize(bookDto.Publisher);
         book.PublicationYear = bookDto.PublicationYear;
         book.ReplacementCost = bookDto.ReplacementCost;
-        book.TotalCopies = bookDto.TotalCopies;
-        book.AvailableCopies = bookDto.AvailableCopies;
     }
 
     private static string Normalize(string value) => value.Trim();
+
+    private static string GenerateBarcode() => $"BC-{Guid.NewGuid():N}";
 
     private static BookDto ToDto(Book book) => new(
         book.Id,
@@ -201,6 +291,12 @@ public sealed class BookService(LibraryDbContext dbContext) : IBookService
         book.Publisher,
         book.PublicationYear,
         book.ReplacementCost,
-        book.TotalCopies,
-        book.AvailableCopies);
+        book.Copies.Count,
+        book.Copies.Count(copy => copy.Status == BookCopyStatus.Available));
+
+    private static BookCopyDto ToDto(BookCopy copy) => new(
+        copy.Id,
+        copy.BookId,
+        copy.Barcode,
+        copy.Status);
 }

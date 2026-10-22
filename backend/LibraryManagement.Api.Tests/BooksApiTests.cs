@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using LibraryManagement.Application.Books;
+using LibraryManagement.Domain.Entities;
 using Xunit;
 
 namespace LibraryManagement.Api.Tests;
@@ -158,12 +159,85 @@ public sealed class BooksApiTests : IAsyncLifetime
 
         var createdBook = await response.Content.ReadFromJsonAsync<BookDto>();
         Assert.NotNull(createdBook);
+        Assert.Equal(2, createdBook.TotalCopies);
+        Assert.Equal(2, createdBook.AvailableCopies);
 
         var getResponse = await _client.GetAsync(response.Headers.Location);
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
 
         var fetchedBook = await getResponse.Content.ReadFromJsonAsync<BookDto>();
         Assert.Equal(createdBook, fetchedBook);
+    }
+
+    [Fact]
+    public async Task GetBookCopies_returns_generated_unique_barcodes()
+    {
+        var createdBook = await CreateBookAsync();
+
+        var copies = await _client.GetFromJsonAsync<BookCopyDto[]>(
+            $"/api/books/{createdBook.Id}/copies");
+
+        Assert.NotNull(copies);
+        Assert.Equal(2, copies.Length);
+        Assert.Equal(copies.Length, copies.Select(copy => copy.Barcode).Distinct().Count());
+        Assert.All(copies, copy =>
+        {
+            Assert.StartsWith("BC-", copy.Barcode);
+            Assert.Equal(BookCopyStatus.Available, copy.Status);
+        });
+    }
+
+    [Fact]
+    public async Task PostBookCopy_adds_available_copy_and_updates_book_counts()
+    {
+        var book = await CreateBookAsync();
+
+        var response = await _client.PostAsync($"/api/books/{book.Id}/copies", content: null);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var copy = await response.Content.ReadFromJsonAsync<BookCopyDto>();
+        Assert.NotNull(copy);
+        Assert.Equal(book.Id, copy.BookId);
+        Assert.StartsWith("BC-", copy.Barcode);
+        Assert.Equal(BookCopyStatus.Available, copy.Status);
+
+        var updatedBook = await _client.GetFromJsonAsync<BookDto>($"/api/books/{book.Id}");
+        Assert.NotNull(updatedBook);
+        Assert.Equal(3, updatedBook.TotalCopies);
+        Assert.Equal(3, updatedBook.AvailableCopies);
+    }
+
+    [Theory]
+    [InlineData(BookCopyStatus.Missing)]
+    [InlineData(BookCopyStatus.Damaged)]
+    public async Task PutBookCopyStatus_updates_status_and_available_count(BookCopyStatus status)
+    {
+        var book = await CreateBookAsync();
+        var copies = await _client.GetFromJsonAsync<BookCopyDto[]>(
+            $"/api/books/{book.Id}/copies");
+        Assert.NotNull(copies);
+
+        var response = await _client.PutAsJsonAsync(
+            $"/api/books/{book.Id}/copies/{copies[0].Barcode}/status",
+            new BookCopyStatusUpdateDto { Status = status });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var updatedCopy = await response.Content.ReadFromJsonAsync<BookCopyDto>();
+        Assert.NotNull(updatedCopy);
+        Assert.Equal(status, updatedCopy.Status);
+
+        var updatedBook = await _client.GetFromJsonAsync<BookDto>($"/api/books/{book.Id}");
+        Assert.NotNull(updatedBook);
+        Assert.Equal(2, updatedBook.TotalCopies);
+        Assert.Equal(1, updatedBook.AvailableCopies);
+    }
+
+    [Fact]
+    public async Task GetBookCopies_returns_not_found_for_unknown_book()
+    {
+        var response = await _client.GetAsync("/api/books/999/copies");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
@@ -221,21 +295,21 @@ public sealed class BooksApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PostBook_returns_bad_request_when_copy_counts_are_invalid()
+    public async Task PostBook_returns_bad_request_when_initial_copy_count_is_negative()
     {
         var response = await _client.PostAsJsonAsync(
             "/api/books",
-            ValidBook(totalCopies: 5, availableCopies: 6));
+            ValidBook(initialCopies: -1));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
-    public async Task PostBook_returns_bad_request_when_total_copies_are_zero()
+    public async Task PostBook_returns_bad_request_when_initial_copy_count_exceeds_limit()
     {
         var response = await _client.PostAsJsonAsync(
             "/api/books",
-            ValidBook(totalCopies: 0, availableCopies: 0));
+            ValidBook(initialCopies: 1001));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -251,9 +325,19 @@ public sealed class BooksApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task DeleteBook_returns_no_content_and_then_not_found()
+    public async Task DeleteBook_returns_conflict_when_copies_exist()
     {
         var createdBook = await CreateBookAsync();
+
+        var response = await _client.DeleteAsync($"/api/books/{createdBook.Id}");
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteBook_deletes_book_without_copies()
+    {
+        var createdBook = await CreateBookAsync(initialCopies: 0);
 
         var response = await _client.DeleteAsync($"/api/books/{createdBook.Id}");
 
@@ -274,11 +358,12 @@ public sealed class BooksApiTests : IAsyncLifetime
         string isbn = "9780000000001",
         string title = "Test Book",
         string author = "Test Author",
-        string category = "Fiction")
+        string category = "Fiction",
+        int initialCopies = 2)
     {
         var response = await _client.PostAsJsonAsync(
             "/api/books",
-            ValidBook(isbn, title, author: author, category: category));
+            ValidBook(isbn, title, author: author, category: category, initialCopies: initialCopies));
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<BookDto>())!;
     }
@@ -287,10 +372,9 @@ public sealed class BooksApiTests : IAsyncLifetime
         string isbn = "9780000000001",
         string title = "Test Book",
         decimal replacementCost = 19.99m,
-        int totalCopies = 5,
-        int availableCopies = 4,
         string author = "Test Author",
-        string category = "Fiction") => new
+        string category = "Fiction",
+        int initialCopies = 2) => new
     {
         isbn,
         title,
@@ -299,7 +383,6 @@ public sealed class BooksApiTests : IAsyncLifetime
         publisher = "Test Publisher",
         publicationYear = 2020,
         replacementCost,
-        totalCopies,
-        availableCopies
+        initialCopies
     };
 }

@@ -1,3 +1,5 @@
+using LibraryManagement.Domain.Entities;
+
 namespace LibraryManagement.Application.Books;
 
 public interface IBookService
@@ -10,8 +12,12 @@ public interface IBookService
         int id,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<BookCopyDto>?> GetBookCopiesAsync(
+        int bookId,
+        CancellationToken cancellationToken = default);
+
     Task<BookWriteResult> CreateBookAsync(
-        BookWriteDto book,
+        BookCreateDto book,
         CancellationToken cancellationToken = default);
 
     Task<BookWriteResult> UpdateBookAsync(
@@ -19,7 +25,17 @@ public interface IBookService
         BookWriteDto book,
         CancellationToken cancellationToken = default);
 
-    Task<bool> DeleteBookAsync(
+    Task<BookCopyOperationResult> AddBookCopyAsync(
+        int bookId,
+        CancellationToken cancellationToken = default);
+
+    Task<BookCopyOperationResult> UpdateBookCopyStatusAsync(
+        int bookId,
+        string barcode,
+        BookCopyStatus status,
+        CancellationToken cancellationToken = default);
+
+    Task<BookDeleteStatus> DeleteBookAsync(
         int id,
         CancellationToken cancellationToken = default);
 }
