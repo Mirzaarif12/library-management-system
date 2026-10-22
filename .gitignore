@@ -51,3 +51,6 @@ Thumbs.db
 # Standalone .NET backend build output
 /backend/**/bin/
 /backend/**/obj/
+
+# Visual Studio
+.vs/
