@@ -233,6 +233,127 @@ public sealed class BooksApiTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task PutBookCopyStatus_borrows_available_copy_and_updates_counts()
+    {
+        var book = await CreateBookAsync();
+        var copies = await _client.GetFromJsonAsync<BookCopyDto[]>($"/api/books/{book.Id}/copies");
+        Assert.NotNull(copies);
+
+        var response = await _client.PutAsJsonAsync(
+            $"/api/books/{book.Id}/copies/{copies[0].Barcode}/status",
+            new BookCopyStatusUpdateDto { Status = BookCopyStatus.OnLoan });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var updatedCopy = await response.Content.ReadFromJsonAsync<BookCopyDto>();
+        Assert.NotNull(updatedCopy);
+        Assert.Equal(BookCopyStatus.OnLoan, updatedCopy.Status);
+
+        var updatedBook = await _client.GetFromJsonAsync<BookDto>($"/api/books/{book.Id}");
+        Assert.NotNull(updatedBook);
+        Assert.Equal(2, updatedBook.TotalCopies);
+        Assert.Equal(1, updatedBook.AvailableCopies);
+    }
+
+    [Fact]
+    public async Task PutBookCopyStatus_returns_on_loan_copy_and_updates_counts()
+    {
+        var book = await CreateBookAsync();
+        var copies = await _client.GetFromJsonAsync<BookCopyDto[]>($"/api/books/{book.Id}/copies");
+        Assert.NotNull(copies);
+
+        var borrowResponse = await _client.PutAsJsonAsync(
+            $"/api/books/{book.Id}/copies/{copies[0].Barcode}/status",
+            new BookCopyStatusUpdateDto { Status = BookCopyStatus.OnLoan });
+        Assert.Equal(HttpStatusCode.OK, borrowResponse.StatusCode);
+
+        var returnResponse = await _client.PutAsJsonAsync(
+            $"/api/books/{book.Id}/copies/{copies[0].Barcode}/status",
+            new BookCopyStatusUpdateDto { Status = BookCopyStatus.Available });
+
+        Assert.Equal(HttpStatusCode.OK, returnResponse.StatusCode);
+        var updatedCopy = await returnResponse.Content.ReadFromJsonAsync<BookCopyDto>();
+        Assert.NotNull(updatedCopy);
+        Assert.Equal(BookCopyStatus.Available, updatedCopy.Status);
+
+        var updatedBook = await _client.GetFromJsonAsync<BookDto>($"/api/books/{book.Id}");
+        Assert.NotNull(updatedBook);
+        Assert.Equal(2, updatedBook.TotalCopies);
+        Assert.Equal(2, updatedBook.AvailableCopies);
+    }
+
+    [Fact]
+    public async Task PutBookCopyStatus_returns_bad_request_when_borrowing_unavailable_copy()
+    {
+        var book = await CreateBookAsync();
+        var copies = await _client.GetFromJsonAsync<BookCopyDto[]>($"/api/books/{book.Id}/copies");
+        Assert.NotNull(copies);
+
+        var markMissingResponse = await _client.PutAsJsonAsync(
+            $"/api/books/{book.Id}/copies/{copies[0].Barcode}/status",
+            new BookCopyStatusUpdateDto { Status = BookCopyStatus.Missing });
+        Assert.Equal(HttpStatusCode.OK, markMissingResponse.StatusCode);
+
+        var response = await _client.PutAsJsonAsync(
+            $"/api/books/{book.Id}/copies/{copies[0].Barcode}/status",
+            new BookCopyStatusUpdateDto { Status = BookCopyStatus.OnLoan });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task PutBookCopyStatus_returns_bad_request_when_returning_non_loan_copy()
+    {
+        var book = await CreateBookAsync();
+        var copies = await _client.GetFromJsonAsync<BookCopyDto[]>($"/api/books/{book.Id}/copies");
+        Assert.NotNull(copies);
+
+        var response = await _client.PutAsJsonAsync(
+            $"/api/books/{book.Id}/copies/{copies[0].Barcode}/status",
+            new BookCopyStatusUpdateDto { Status = BookCopyStatus.Available });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetBooks_returns_zero_copy_counts_for_book_without_copies()
+    {
+        var createdBook = await CreateBookAsync(initialCopies: 0);
+
+        var result = await _client.GetFromJsonAsync<PagedResult<BookDto>>("/api/books");
+
+        Assert.NotNull(result);
+        var listedBook = Assert.Single(result.Items);
+        Assert.Equal(createdBook.Id, listedBook.Id);
+        Assert.Equal(0, listedBook.TotalCopies);
+        Assert.Equal(0, listedBook.AvailableCopies);
+    }
+
+    [Fact]
+    public async Task GetBooks_returns_zero_available_copies_when_all_copies_are_unavailable()
+    {
+        var createdBook = await CreateBookAsync(initialCopies: 2);
+        var copies = await _client.GetFromJsonAsync<BookCopyDto[]>($"/api/books/{createdBook.Id}/copies");
+        Assert.NotNull(copies);
+
+        foreach (var copy in copies)
+        {
+            var updateResponse = await _client.PutAsJsonAsync(
+                $"/api/books/{createdBook.Id}/copies/{copy.Barcode}/status",
+                new BookCopyStatusUpdateDto { Status = BookCopyStatus.Missing });
+
+            Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+        }
+
+        var result = await _client.GetFromJsonAsync<PagedResult<BookDto>>("/api/books");
+
+        Assert.NotNull(result);
+        var listedBook = Assert.Single(result.Items);
+        Assert.Equal(createdBook.Id, listedBook.Id);
+        Assert.Equal(2, listedBook.TotalCopies);
+        Assert.Equal(0, listedBook.AvailableCopies);
+    }
+
+    [Fact]
     public async Task GetBookCopies_returns_not_found_for_unknown_book()
     {
         var response = await _client.GetAsync("/api/books/999/copies");

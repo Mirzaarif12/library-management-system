@@ -230,6 +230,16 @@ public sealed class BookService(LibraryDbContext dbContext) : IBookService
                     : BookCopyOperationStatus.BookNotFound);
         }
 
+        if (status == BookCopyStatus.OnLoan && copy.Status != BookCopyStatus.Available)
+        {
+            return new BookCopyOperationResult(BookCopyOperationStatus.InvalidStatus);
+        }
+
+        if (status == BookCopyStatus.Available && copy.Status != BookCopyStatus.OnLoan)
+        {
+            return new BookCopyOperationResult(BookCopyOperationStatus.InvalidStatus);
+        }
+
         copy.Status = status;
         await dbContext.SaveChangesAsync(cancellationToken);
 

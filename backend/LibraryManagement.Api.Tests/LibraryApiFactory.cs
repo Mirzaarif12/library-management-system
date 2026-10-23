@@ -21,6 +21,7 @@ public sealed class LibraryApiFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Testing");
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<IDbContextOptionsConfiguration<LibraryDbContext>>();
