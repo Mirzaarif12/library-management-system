@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators, } from '@angular/forms';
 import { AuthService } from '../authservice';
 import { Router, RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   imports: [ReactiveFormsModule, RouterLink ],
@@ -28,22 +29,39 @@ export class Login {
   });
 
   protected submit(): void {
-    this.errorMessage.set('');
+  this.errorMessage.set('');
 
-    if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched();
-      return;
-    }
-
-    const { email, password } = this.loginForm.getRawValue();
-
-    if (!this.authService.signIn(email, password)) {
-      this.errorMessage.set('Email or password is incorrect.');
-      return;
-    }
-
-    void this.router.navigateByUrl('/dashboard');
+  if (this.loginForm.invalid) {
+    this.loginForm.markAllAsTouched();
+    return;
   }
+
+  const { email, password } = this.loginForm.getRawValue();
+
+  this.authService.login(email, password).subscribe({
+    next: (response) => {
+      if (!response.status || !response.body) {
+        this.errorMessage.set(
+          response.statusMsg || 'Email or password is incorrect.',
+        );
+        return;
+      }
+
+    if (!this.authService.completeLogin(response.body)) {
+      this.errorMessage.set('Your account is inactiveor your role is not supported.');
+      return;
+    }
+    
+    void this.router.navigateByUrl('/dashboard');
+
+    },
+    error: () => {
+      this.errorMessage.set(
+        'Unable to sign in. Check your details and try again.',
+      );
+    },
+  });
+ } 
 
   
 }
