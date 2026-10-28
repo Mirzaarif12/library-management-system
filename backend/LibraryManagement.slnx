@@ -1,7 +1,0 @@
-<Solution>
-  <Project Path="LibraryManagement.Api.Tests/LibraryManagement.Api.Tests.csproj" />
-  <Project Path="LibraryManagement.Api/LibraryManagement.Api.csproj" />
-  <Project Path="LibraryManagement.Application/LibraryManagement.Application.csproj" />
-  <Project Path="LibraryManagement.Domain/LibraryManagement.Domain.csproj" />
-  <Project Path="LibraryManagement.Infrastructure/LibraryManagement.Infrastructure.csproj" />
-</Solution>

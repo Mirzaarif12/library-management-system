@@ -1,5 +1,23 @@
-import { Service, computed, signal, effect, afterNextRender } from '@angular/core';
+import { Service, computed, signal, effect, afterNextRender,inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import type { User } from '../../models/user';
+
+
+interface LoginUser {
+  userId: number;
+  name: string;
+  email: string;
+  role: string;
+  isActive: boolean;
+  tokenAdmin: string;
+}
+
+interface LoginResponse {
+  status: boolean;
+  errorCode: number;
+  statusMsg: string;
+  body: LoginUser | null;
+}
 
 interface DemoAccount {
   email: string;
@@ -66,12 +84,47 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
 @Service()
 export class AuthService {
   readonly currentUser = signal<User | null>(null);
+  private readonly accessToken = signal<string | null>(null);
+
+  // Inject the HttpClient service for making HTTP requests
+  private readonly http = inject(HttpClient);
+
+  login(email: string, password: string) {
+    return this.http.post<LoginResponse>(
+      '/api/ExternalAuth/LoginExternal',
+      {
+        email: email.trim(),
+        password,
+      },
+    );
+  }
+
+  completeLogin(backendUser: LoginUser): boolean {
+  if (
+    !backendUser.isActive ||
+    !backendUser.tokenAdmin ||
+    backendUser.role !== 'SuperAdmin'
+  ) {
+    return false;
+  }
+
+  this.accessToken.set(backendUser.tokenAdmin);
+
+  this.currentUser.set({
+    id: String(backendUser.userId),
+    email: backendUser.email,
+    role: 'admin',
+  });
+
+  return true;
+ }
+
+
+
+  // Demo accounts for testing purposes. In a real application, these would be managed by a backend service.
   private readonly accounts = signal<DemoAccount[]>(DEMO_ACCOUNTS);
   readonly isSignedIn = computed(() => {
-    const user = this.currentUser();
-    return !!user && this.accounts().some(
-      (account) => account.user.id === user.id && account.status !== 'disabled',
-    );
+    return this.currentUser() !== null && !!this.accessToken();
   });
   readonly staffAccounts = computed<StaffAccount[]>(() =>
     this.accounts()
@@ -302,6 +355,7 @@ export class AuthService {
   }
 
   signOut(): void {
+    this.accessToken.set(null);
     this.currentUser.set(null);
   }
 }
